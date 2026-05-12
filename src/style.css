@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-500: #1e3a8a;
+  --color-primary-600: #1e40af;
+  --color-accent-400: #d97706;
+  --color-accent-500: #b45309;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 font-sans antialiased;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl;
+  }
+  
+  .glass-panel {
+    @apply bg-white/60 backdrop-blur-md border border-slate-200;
+  }
+}

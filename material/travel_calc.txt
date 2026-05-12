@@ -1,0 +1,83 @@
+Манбалардаги «Туристларни суғурта қилиш» оммавий офертасига (0204-маҳсулот) асосан, саёҳат суғуртаси калькуляторининг аниқ мантиғи ва Vue.js (Composition API) дастурлаш тили учун тайёр формуласини тақдим этаман.
+
+Оферта шартларига кўра, калькулятор қуйидаги асосий ўзгарувчиларга (Variables) ва қоидаларга асосланади:
+1. **Базавий кунлик тарифлар:** «STANDART» пакети учун 4 000 сўм, «COMFORT» пакети учун 8 000 сўм.
+2. **Муддат:** Саёҳатнинг умумий кунлари сони.
+3. **Коэффициентлар:** Мижознинг ёши ва саёҳатчилар сонига қараб хавф коэффициенти қўлланилади.
+4. **Валюта:** Резидентлар учун сўмда, норезидентлар учун эса Марказий банк курси бўйича АҚШ доллари ёки Еврода ҳисобланади.
+
+Қуйида ушбу калькуляторнинг **Vue 3 (`<script setup>`)** форматидаги тўлиқ ва ишлайдиган мантиғи (алгоритми):
+
+```javascript
+<script setup>
+import { ref, computed } from 'vue';
+
+// 1. АСОСИЙ ЎЗГАРУВЧИЛАР (STATE)
+const selectedPackage = ref('STANDART'); // Пакет тури: 'STANDART' ёки 'COMFORT'
+const startDate = ref('2026-06-01');     // Саёҳат бошланиши
+const endDate = ref('2026-06-10');       // Саёҳат тугаши
+const age = ref(35);                     // Мижознинг ёши
+const travelersCount = ref(1);           // Саёҳатчилар сони (гуруҳ)
+const isResident = ref(true);            // Ўзбекистон резидентими? (true/false)
+const usdExchangeRate = ref(12600);      // Марказий банкнинг жорий курси (API дан олинади)
+
+// 2. БАЗАВИЙ ТАРИФЛАР (КОНСТАНТАЛАР)
+const BASE_DAILY_RATES = {
+  STANDART: 4000, // 5 млн сўмлик қоплама учун
+  COMFORT: 8000   // 50 млн сўмлик қоплама учун
+};
+
+// 3. ҲИСОБЛАШ ФОРМУЛАЛАРИ (COMPUTED PROPERTIES)
+
+// А) Саёҳат кунларини ҳисоблаш
+const tripDays = computed(() => {
+  if (!startDate.value || !endDate.value) return 0;
+  const start = new Date(startDate.value);
+  const end = new Date(endDate.value);
+  const diffTime = Math.abs(end - start);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+  return diffDays > 0 ? diffDays : 1; // Минимал 1 кун
+});
+
+// Б) Ёшга доир хавф коэффициентини аниқлаш
+// (Изоҳ: Юридик офертада аниқ рақамлар берилмаган, буни ўз риск-менежерларингиз тасдиқлаган жадвалдан оласиз. Қуйида стандарт Иншуртех мантиғи)
+const ageCoefficient = computed(() => {
+  if (age.value < 7) return 1.5;       // Ёш болалар учун хавф юқори
+  if (age.value > 65) return 2.0;      // Қариялар учун хавф юқори
+  return 1.0;                          // Стандарт ёш (7-65)
+});
+
+// В) Гуруҳ (саёҳатчилар сони) коэффициентини аниқлаш
+const groupCoefficient = computed(() => {
+  if (travelersCount.value >= 10) return 0.9; // 10 кишидан ошса 10% чегирма
+  if (travelersCount.value >= 5) return 0.95; // 5 кишидан ошса 5% чегирма
+  return 1.0;
+});
+
+// Г) ЯКУНИЙ СУҒУРТА МУКОФОТИНИ ҲИСОБЛАШ (СЎМДА)
+const totalPremiumUZS = computed(() => {
+  const baseRate = BASE_DAILY_RATES[selectedPackage.value];
+  const total = baseRate * tripDays.value * ageCoefficient.value * groupCoefficient.value * travelersCount.value;
+  return total;
+});
+
+// Д) НОРЕЗИДЕНТЛАР УЧУН ВАЛЮТАГА ЎГИРИШ
+const totalPremiumForeign = computed(() => {
+  if (!isResident.value) {
+    return (totalPremiumUZS.value / usdExchangeRate.value).toFixed(2); // АҚШ долларида
+  }
+  return 0;
+});
+</script>
+
+<template>
+  <!-- Бу ерда Tailwind CSS ёрдамида натижаларни UI га чиқарасиз -->
+  <div>
+    <h3>Якуний нарх: {{ totalPremiumUZS }} Сўм</h3>
+    <h3 v-if="!isResident">Хорижий фуқаролар учун: $ {{ totalPremiumForeign }}</h3>
+  </div>
+</template>
+```
+
+**Бизнес-инсайт (Муҳим):**
+Ҳужжатларда кўрсатилган ушбу тарифлар (4000 ва 8000 сўм) асосан Ўзбекистон ҳудудида саёҳат қилувчи туристлар учун мўлжалланган офертага тегишли. Агар мижоз Ўзбекистондан Европа ёки бошқа қитъага чиқиб кетаётган бўлса (Outbound), унда `BASE_DAILY_RATES` объектига ҳудудлар (масалан: `EUROPE: 15000, WORLDWIDE: 20000`) коэффициентини ҳам қўшишингиз керак бўлади. Ушбу Vue 3 мантиғи ҳар қандай ўзгарувчини осонгина қўшиш имконини берадиган даражада мослашувчан қилиб ёзилган.
