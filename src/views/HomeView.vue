@@ -90,12 +90,12 @@ function startPurchase(policyId: string) {
         <!-- Compact Header -->
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 max-w-6xl mx-auto">
           <div>
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-50 text-[13px] text-teal-700 mb-4 font-bold border border-teal-100/50">
-              <Zap class="w-4 h-4" />
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 text-[13px] text-[#EE8142] mb-4 font-bold border border-orange-100/50">
+              <Zap class="w-4 h-4 fill-[#EE8142]" />
               <span>100% Onlayn xarid</span>
             </div>
-            <h1 class="text-3xl md:text-[38px] font-black tracking-tight text-slate-900 leading-tight">
-              Sizga qanday <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#14b8a6] to-[#0d9488]">sug'urta</span> kerak?
+            <h1 class="text-3xl md:text-[42px] font-black tracking-tight text-slate-900 leading-tight">
+              Sizga qanday <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#EE8142] to-[#2E5A97]">sug'urta</span> kerak?
             </h1>
           </div>
           <p class="text-slate-500 mt-4 md:mt-0 max-w-sm text-[15px] font-medium leading-relaxed">

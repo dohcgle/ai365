@@ -74,11 +74,9 @@ const toggleLang = (lang: string) => {
       <div class="max-w-7xl mx-auto px-4 md:px-8 h-[88px] flex items-center justify-between">
         <!-- Logo -->
         <RouterLink to="/" class="flex items-center gap-3 group">
-          <div class="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-teal-900/20 group-hover:scale-110 transition-transform">
-            <Building2 class="w-6 h-6" />
-          </div>
-          <span class="text-xl font-black text-slate-900 tracking-tighter">
-            ASIA <span class="text-teal-600">INSURANCE</span>
+          <img src="/logo-mini20.png" alt="ASIA INSURANCE" class="w-12 h-12 object-contain group-hover:scale-110 transition-transform" />
+          <span class="text-xl font-black text-slate-900 tracking-tighter uppercase">
+            <span class="text-[#EE8142]">ASIA</span> <span class="text-[#2E5A97]">INSURANCE</span>
           </span>
         </RouterLink>
         
@@ -89,7 +87,7 @@ const toggleLang = (lang: string) => {
             <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-teal-500 transition-all group-hover:w-full"></span>
           </a>
           <a href="#" class="hover:text-teal-600 transition-colors py-2 relative group text-teal-600">
-            E-Polis xarid
+            E-Polis
             <span class="absolute bottom-0 left-0 w-full h-0.5 bg-teal-500"></span>
           </a>
           <a href="#" class="hover:text-teal-600 transition-colors py-2 relative group flex items-center gap-1.5">
@@ -139,96 +137,99 @@ const toggleLang = (lang: string) => {
       <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#14b8a6] via-[#2dd4bf] to-blue-500 opacity-50"></div>
       
       <div class="max-w-7xl mx-auto px-4 md:px-8 py-16 pb-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
-          <!-- Col 1 -->
-          <div class="lg:col-span-2 space-y-6">
-            <RouterLink to="/" class="flex items-center gap-3 mb-6 group">
-              <div class="w-10 h-10 bg-[#1e3a8a] rounded-xl flex items-center justify-center text-white group-hover:scale-105 transition-transform">
-                <Building2 class="w-6 h-6" />
+        <div class="flex flex-col lg:flex-row gap-12 lg:gap-20">
+          <!-- Left Side: Logo & Contacts -->
+          <div class="lg:w-1/3 space-y-8">
+            <div class="space-y-6">
+              <RouterLink to="/" class="flex items-center gap-3 mb-6 group">
+                <img src="/logo-mini20.png" alt="ASIA INSURANCE" class="w-12 h-12 object-contain" />
+                <span class="text-xl font-black text-slate-900 tracking-tighter uppercase">
+                  <span class="text-[#EE8142]">ASIA</span> <span class="text-[#2E5A97]">INSURANCE</span>
+                </span>
+              </RouterLink>
+              
+              <p class="text-slate-500 text-sm leading-relaxed max-w-sm">
+                Sug'urtani rasmiylashtiring, 24/7 yordamga murojaat qiling, sug'urta va arizangiz holatini kuzatib boring.
+              </p>
+              
+              <div class="flex gap-3">
+                <a href="#" class="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-colors">
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.04 2.26-.74 3.58-.74 2.27 0 3.99 1.14 5.06 2.89-4.32 2.39-3.66 7.82.52 9.53-.87 1.87-2.12 3.8-4.24 5.49zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+                  <div class="flex flex-col items-start">
+                    <span class="text-[10px] leading-none text-slate-300">Yuklab olish</span>
+                    <span class="text-sm font-bold leading-tight">App Store</span>
+                  </div>
+                </a>
+                <a href="#" class="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-colors">
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186c-.165-.286-.25-.623-.25-.986V2.8c0-.363.085-.7.249-.986zM15.4 13.609l3.528 2.037c.75.433 1.114.866 1.092 1.3-.021.433-.429.866-1.222 1.3l-2.062 1.19-2.613-2.613 1.277-3.214zM2.8 1.185C3.164 1.185 3.655 1.411 4.27 1.86l13.608 7.857-4.643 4.643L2.8 1.185zM14.6 14.41L4.27 20.32c-.615.45-1.106.675-1.47.675l10.435-13.185 1.365 6.6z"/></svg>
+                  <div class="flex flex-col items-start">
+                    <span class="text-[10px] leading-none text-slate-300">Yuklab olish</span>
+                    <span class="text-sm font-bold leading-tight">Google Play</span>
+                  </div>
+                </a>
               </div>
-              <span class="text-xl font-black text-slate-900 tracking-tighter uppercase">
-                ASIA <span class="text-accent-500">INSURANCE</span>
-              </span>
-            </RouterLink>
-            
-            <p class="text-slate-500 text-sm leading-relaxed max-w-sm">
-              Sug'urtani rasmiylashtiring, 24/7 yordamga murojaat qiling, sug'urta va arizangiz holatini kuzatib boring.
-            </p>
-            
-            <div class="flex gap-3">
-              <a href="#" class="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-colors">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.04 2.26-.74 3.58-.74 2.27 0 3.99 1.14 5.06 2.89-4.32 2.39-3.66 7.82.52 9.53-.87 1.87-2.12 3.8-4.24 5.49zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
-                <div class="flex flex-col items-start">
-                  <span class="text-[10px] leading-none text-slate-300">Yuklab olish</span>
-                  <span class="text-sm font-bold leading-tight">App Store</span>
-                </div>
-              </a>
-              <a href="#" class="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-colors">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186c-.165-.286-.25-.623-.25-.986V2.8c0-.363.085-.7.249-.986zM15.4 13.609l3.528 2.037c.75.433 1.114.866 1.092 1.3-.021.433-.429.866-1.222 1.3l-2.062 1.19-2.613-2.613 1.277-3.214zM2.8 1.185C3.164 1.185 3.655 1.411 4.27 1.86l13.608 7.857-4.643 4.643L2.8 1.185zM14.6 14.41L4.27 20.32c-.615.45-1.106.675-1.47.675l10.435-13.185 1.365 6.6z"/></svg>
-                <div class="flex flex-col items-start">
-                  <span class="text-[10px] leading-none text-slate-300">Yuklab olish</span>
-                  <span class="text-sm font-bold leading-tight">Google Play</span>
-                </div>
-              </a>
-            </div>
-            
-            <div class="pt-6 border-t border-slate-100">
-              <span class="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-2">Yagona aloqa markazi</span>
-              <a href="tel:+998712025566" class="text-2xl font-black text-slate-900 hover:text-teal-500 transition-colors flex items-center gap-3 w-max">
-                <div class="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center shrink-0">
-                  <Phone class="w-5 h-5 text-teal-600" />
-                </div>
-                +998 71 233 11 11
-              </a>
+              
+              <div class="pt-6 border-t border-slate-100">
+                <span class="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-2">Yagona aloqa markazi</span>
+                <a href="tel:+998712025566" class="text-2xl font-black text-slate-900 hover:text-[#2E5A97] transition-colors flex items-center gap-3 w-max">
+                  <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center shrink-0">
+                    <Phone class="w-5 h-5 text-[#2E5A97]" />
+                  </div>
+                  +998 71 233 11 11
+                </a>
+              </div>
             </div>
           </div>
-          
-          <!-- Col 2: Kompaniya haqida -->
-          <div>
-            <h4 class="font-bold text-slate-900 mb-6 uppercase tracking-wider text-sm">Kompaniya haqida</h4>
-            <ul class="space-y-3">
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Biz haqimizda</a></li>
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Kompaniya boshqaruvi</a></li>
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Vakansiya</a></li>
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Litsenziyalar va sertifikatlar</a></li>
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Ustav</a></li>
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Ommaviy oferta</a></li>
-            </ul>
-          </div>
-          
-          <!-- Col 3: Matbuot markazi -->
-          <div>
-            <h4 class="font-bold text-slate-900 mb-6 uppercase tracking-wider text-sm">Matbuot markazi</h4>
-            <ul class="space-y-3">
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Kompaniya yangiliklari</a></li>
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">E'lonlar</a></li>
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Tadbirlar</a></li>
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Auditorlar</a></li>
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Tenderlar</a></li>
-            </ul>
-          </div>
 
-          <!-- Col 4: Aksiyadorlar -->
-          <div>
-            <h4 class="font-bold text-slate-900 mb-6 uppercase tracking-wider text-sm">Aksiyadorlar</h4>
-            <ul class="space-y-3">
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Biznes-reja va strategiya</a></li>
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Muhim faktlar</a></li>
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Moliyaviy hisobotlar</a></li>
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Maxfiylik siyosati</a></li>
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Affillangan shaxslar</a></li>
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Dividendlar</a></li>
-            </ul>
-          </div>
+          <!-- Right Side: Links Grid (4 Columns) -->
+          <div class="lg:w-2/3 grid grid-cols-2 md:grid-cols-4 gap-10">
+            <!-- Col 1: Kompaniya haqida -->
+            <div>
+              <h4 class="font-bold text-slate-900 mb-6 uppercase tracking-wider text-sm">Kompaniya haqida</h4>
+              <ul class="space-y-3">
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Biz haqimizda</a></li>
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Kompaniya boshqaruvi</a></li>
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Vakansiya</a></li>
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Litsenziyalar va sertifikatlar</a></li>
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Ustav</a></li>
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Ommaviy oferta</a></li>
+              </ul>
+            </div>
+            
+            <!-- Col 2: Matbuot markazi -->
+            <div>
+              <h4 class="font-bold text-slate-900 mb-6 uppercase tracking-wider text-sm">Matbuot markazi</h4>
+              <ul class="space-y-3">
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Kompaniya yangiliklari</a></li>
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">E'lonlar</a></li>
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Tadbirlar</a></li>
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Auditorlar</a></li>
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Tenderlar</a></li>
+              </ul>
+            </div>
 
-          <!-- Col 5: Qayta aloqa -->
-          <div>
-            <h4 class="font-bold text-slate-900 mb-6 uppercase tracking-wider text-sm">Qayta aloqa</h4>
-            <ul class="space-y-3">
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Savol berish</a></li>
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Fikr qoldirish</a></li>
-              <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-teal-600 hover:pl-2 transition-all block">Onlayn so'rovnoma</a></li>
-            </ul>
+            <!-- Col 3: Aksiyadorlar -->
+            <div>
+              <h4 class="font-bold text-slate-900 mb-6 uppercase tracking-wider text-sm">Aksiyadorlar</h4>
+              <ul class="space-y-3">
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Biznes-reja va strategiya</a></li>
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Muhim faktlar</a></li>
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Moliyaviy hisobotlar</a></li>
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Maxfiylik siyosati</a></li>
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Affillangan shaxslar</a></li>
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Dividendlar</a></li>
+              </ul>
+            </div>
+
+            <!-- Col 4: Qayta aloqa -->
+            <div>
+              <h4 class="font-bold text-slate-900 mb-6 uppercase tracking-wider text-sm">Qayta aloqa</h4>
+              <ul class="space-y-3">
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Savol berish</a></li>
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Fikr qoldirish</a></li>
+                <li><a href="#" class="text-[14.5px] text-slate-600 hover:text-[#2E5A97] hover:pl-2 transition-all block">Onlayn so'rovnoma</a></li>
+              </ul>
+            </div>
           </div>
         </div>
         
