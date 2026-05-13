@@ -2,7 +2,7 @@
 import { ref, watch, onMounted } from 'vue'
 import { useWizardStore } from '../../stores/wizard'
 import { useHujjatStore } from '../../stores/hujjat'
-import { Search, ChevronRight, CheckCircle2, Loader2, Check } from 'lucide-vue-next'
+import { CheckCircle2, Loader2, Check } from 'lucide-vue-next'
 
 const wizardStore = useWizardStore()
 const hujjatStore = useHujjatStore()

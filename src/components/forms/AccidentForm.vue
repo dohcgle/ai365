@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { useWizardStore } from '../../stores/wizard'
-import { Search, ChevronRight, CheckCircle2, Loader2 } from 'lucide-vue-next'
+import { ChevronRight, CheckCircle2, Loader2 } from 'lucide-vue-next'
 
 const store = useWizardStore()
 const isFetching = ref(false)
