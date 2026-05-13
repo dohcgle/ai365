@@ -45,14 +45,18 @@ onMounted(() => {
     <!-- Top Bar -->
     <div class="bg-slate-900 text-slate-300 py-2 hidden md:block border-b border-slate-800">
       <div class="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between text-[13px] font-medium">
-        <!-- Social Links -->
-        <div class="flex items-center gap-4">
-          <span class="text-slate-400">Biz ijtimoiy tarmoqlarda:</span>
-          <div class="flex items-center gap-3.5">
-            <a href="#" class="hover:text-[#14b8a6] transition-colors"><Send class="w-3.5 h-3.5" /></a>
-            <a href="#" class="hover:text-[#14b8a6] transition-colors"><Instagram class="w-3.5 h-3.5" /></a>
-            <a href="#" class="hover:text-[#14b8a6] transition-colors"><Facebook class="w-3.5 h-3.5" /></a>
+        <!-- Social Links & Bot -->
+        <div class="flex items-center gap-6">
+          <div class="flex items-center gap-4 border-r border-slate-700 pr-6 mr-2">
+            <span class="text-slate-400 hidden lg:inline">Biz ijtimoiy tarmoqlarda:</span>
+            <a href="#" class="hover:text-white transition-colors"><Instagram class="w-4 h-4" /></a>
+            <a href="#" class="hover:text-white transition-colors"><Facebook class="w-4 h-4" /></a>
+            <a href="https://t.me/ai365uz_bot" class="hover:text-white transition-colors"><Send class="w-4 h-4" /></a>
           </div>
+          <a href="https://t.me/ai365uz_bot" target="_blank" class="flex items-center gap-2 text-teal-400 hover:text-teal-300 transition-colors font-bold tracking-tight">
+            <div class="w-2 h-2 bg-teal-500 rounded-full animate-pulse"></div>
+            <span>Bot: @ai365uz_bot</span>
+          </a>
         </div>
         
         <!-- Right side topbar -->

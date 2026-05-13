@@ -191,6 +191,22 @@ function startPurchase(policyId: string) {
           </a>
        </div>
     </div>
+    <!-- Telegram Bot Floating Widget -->
+    <a 
+      href="https://t.me/ai365uz_bot" 
+      target="_blank"
+      class="fixed bottom-6 right-6 z-[100] group flex items-center gap-3 bg-white/80 backdrop-blur-md border border-blue-100 p-2 pr-6 rounded-full shadow-[0_20px_50px_rgba(46,90,151,0.15)] hover:shadow-[0_20px_60px_rgba(46,90,151,0.25)] transition-all duration-500 hover:-translate-y-2 group animate-in fade-in slide-in-from-bottom-10 duration-1000"
+    >
+      <div class="w-12 h-12 rounded-full bg-[#24A1DE] flex items-center justify-center text-white shadow-lg shadow-blue-500/30 group-hover:rotate-[360deg] transition-all duration-1000 relative">
+        <Send class="w-6 h-6 -translate-x-0.5 translate-y-0.5" />
+        <!-- Pulse Effect -->
+        <div class="absolute inset-0 rounded-full bg-[#24A1DE] animate-ping opacity-20"></div>
+      </div>
+      <div class="flex flex-col">
+        <span class="text-[10px] font-black text-[#24A1DE] uppercase tracking-widest leading-none mb-1">Telegram Bot</span>
+        <span class="text-[14px] font-bold text-slate-800 leading-none">@ai365uz_bot</span>
+      </div>
+    </a>
   </div>
 </template>
 
