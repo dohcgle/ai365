@@ -137,7 +137,7 @@ function startPurchase(policyId: string) {
             <!-- Badge -->
             <div v-if="policy.isPopular" class="absolute top-6 right-6 z-20">
               <div class="px-2.5 py-1 rounded-xl bg-orange-500 text-white text-[8px] font-black uppercase tracking-widest shadow-lg shadow-orange-500/30">
-                HOT
+                Ommabop
               </div>
             </div>
 
