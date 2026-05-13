@@ -25,38 +25,28 @@ onMounted(() => {
 
 <template>
   <div class="min-h-screen bg-slate-50 font-sans text-slate-900 overflow-x-hidden">
-    <!-- Test Mode Alert -->
-    <div v-if="!tgStore.tg" class="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 text-white text-[11px] font-black uppercase tracking-[0.15em] py-2 text-center flex items-center justify-center gap-4 shadow-md z-[60] relative overflow-hidden border-b border-orange-700/30">
+    <!-- Test Mode Alert: Mobilda yashirildi -->
+    <div v-if="!tgStore.tg" class="hidden md:flex bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 text-white text-[11px] font-black uppercase tracking-[0.15em] py-2 text-center items-center justify-center gap-4 shadow-md z-[60] relative overflow-hidden border-b border-orange-700/30">
       <div class="absolute inset-0 bg-white/5 opacity-10 pattern-dots animate-pulse"></div>
       <span class="flex items-center gap-2 relative z-10 drop-shadow-sm">
         <ShieldAlert class="w-3.5 h-3.5" />
         DIQQAT: Tizim TEST rejimida ishlamoqda
         <ShieldAlert class="w-3.5 h-3.5" />
       </span>
-      <span class="hidden md:inline opacity-80 text-[10px] font-bold relative z-10 border-l border-white/20 pl-4">— BARCHA MA'LUMOTLAR HAQIQIY EMAS —</span>
-    </div>
-    <div v-else class="fixed top-2 right-2 z-[100] animate-pulse">
-       <div class="bg-orange-500/20 backdrop-blur-md border border-orange-500/30 px-2 py-0.5 rounded-full flex items-center gap-1.5 shadow-sm">
-          <div class="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-          <span class="text-[9px] font-black text-orange-600 uppercase tracking-tighter">Test Mode</span>
-       </div>
+      <span class="opacity-80 text-[10px] font-bold relative z-10 border-l border-white/20 pl-4">— BARCHA MA'LUMOTLAR HAQIQIY EMAS —</span>
     </div>
 
     <!-- Top Bar -->
     <div class="bg-slate-900 text-slate-300 py-2 hidden md:block border-b border-slate-800">
       <div class="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between text-[13px] font-medium">
-        <!-- Social Links & Bot -->
-        <div class="flex items-center gap-6">
-          <div class="flex items-center gap-4 border-r border-slate-700 pr-6 mr-2">
-            <span class="text-slate-400 hidden lg:inline">Biz ijtimoiy tarmoqlarda:</span>
-            <a href="#" class="hover:text-white transition-colors"><Instagram class="w-4 h-4" /></a>
-            <a href="#" class="hover:text-white transition-colors"><Facebook class="w-4 h-4" /></a>
-            <a href="https://t.me/ai365uz_bot" class="hover:text-white transition-colors"><Send class="w-4 h-4" /></a>
+        <!-- Social Links -->
+        <div class="flex items-center gap-4">
+          <span class="text-slate-400 hidden lg:inline">Biz ijtimoiy tarmoqlarda:</span>
+          <div class="flex items-center gap-3.5">
+            <a href="https://t.me/ai365uz_bot" class="hover:text-teal-400 transition-colors"><Send class="w-3.5 h-3.5" /></a>
+            <a href="#" class="hover:text-teal-400 transition-colors"><Instagram class="w-3.5 h-3.5" /></a>
+            <a href="#" class="hover:text-teal-400 transition-colors"><Facebook class="w-3.5 h-3.5" /></a>
           </div>
-          <a href="https://t.me/ai365uz_bot" target="_blank" class="flex items-center gap-2 text-teal-400 hover:text-teal-300 transition-colors font-bold tracking-tight">
-            <div class="w-2 h-2 bg-teal-500 rounded-full animate-pulse"></div>
-            <span>Bot: @ai365uz_bot</span>
-          </a>
         </div>
         
         <!-- Right side topbar -->
