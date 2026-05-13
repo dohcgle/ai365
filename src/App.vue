@@ -49,36 +49,45 @@ onMounted(() => {
           </div>
         </div>
         
-        <!-- Right side topbar -->
-        <div class="flex items-center gap-6">
-          <a href="#" class="hover:text-white transition-colors flex items-center gap-1.5">
-            <HelpCircle class="w-3.5 h-3.5 text-slate-400" /> Yordam markazi
-          </a>
+        <!-- Right side topbar: Til tanlash va yordam -->
+        <div class="flex items-center gap-6 flex-shrink-0">
+          <div class="hidden sm:flex items-center gap-4 text-slate-400 border-r border-slate-700 pr-6">
+            <a href="#" class="flex items-center gap-2 hover:text-white transition-colors whitespace-nowrap">
+              <HelpCircle class="w-3.5 h-3.5" />
+              <span>Yordam</span>
+            </a>
+          </div>
           
-          <!-- Language Selector -->
-          <div class="relative">
+          <!-- Language Switcher: Barcha brauzerlar uchun moslangan -->
+          <div class="relative group">
             <button 
               @click="isLangMenuOpen = !isLangMenuOpen"
-              class="flex items-center gap-2 hover:text-white transition-colors group"
+              class="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-slate-800 transition-all border border-transparent hover:border-slate-700 whitespace-nowrap"
             >
-              <span class="text-lg leading-none filter drop-shadow-sm">{{ languages.find(l => l.code === currentLang)?.flag }}</span>
-              <span>{{ currentLang }}</span>
+              <div class="w-5 h-5 rounded-full bg-teal-500/20 flex items-center justify-center text-[10px] font-black text-teal-400 border border-teal-500/30">
+                {{ currentLang }}
+              </div>
+              <span class="text-white font-bold">{{ languages.find(l => l.code === currentLang)?.label.split(' ')[0] }}</span>
               <ChevronDown class="w-3 h-3 text-slate-500 group-hover:text-white transition-colors" />
             </button>
             
             <!-- Dropdown -->
             <div 
               v-if="isLangMenuOpen" 
-              class="absolute top-full right-0 mt-3 bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-slate-100 py-2 w-40 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+              class="absolute top-full right-0 mt-3 bg-white rounded-2xl shadow-[0_15px_50px_rgba(0,0,0,0.15)] border border-slate-100 py-2 w-44 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
             >
               <button 
                 v-for="lang in languages" 
                 :key="lang.code"
                 @click="toggleLang(lang.code)"
-                class="w-full text-left px-5 py-2.5 text-[14px] text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition-colors"
-                :class="{ 'bg-teal-50/50 text-teal-700 font-bold': currentLang === lang.code }"
+                class="w-full text-left px-5 py-3 text-[14px] text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition-all"
+                :class="{ 'bg-teal-50 text-teal-700 font-bold': currentLang === lang.code }"
               >
-                <span class="text-xl filter drop-shadow-sm">{{ lang.flag }}</span> {{ lang.label }}
+                <div class="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[9px] font-black border transition-colors"
+                     :class="currentLang === lang.code ? 'bg-teal-500 text-white border-teal-500' : 'bg-slate-100 text-slate-400 border-slate-200'">
+                  {{ lang.code }}
+                </div>
+                <span class="whitespace-nowrap">{{ lang.label }}</span>
               </button>
             </div>
           </div>
