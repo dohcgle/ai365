@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import { Phone, Mail, MapPin, Send, Instagram, Facebook, User, ChevronDown, ShieldCheck, HelpCircle, ShieldAlert } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { useTelegramStore } from './stores/telegram'
 
 const currentLang = ref('UZ')
 const isLangMenuOpen = ref(false)
+const tgStore = useTelegramStore()
 
 const languages = [
   { code: 'UZ', label: 'O\'zbekcha', flag: '🇺🇿' },
@@ -15,12 +17,16 @@ const toggleLang = (lang: string) => {
   currentLang.value = lang
   isLangMenuOpen.value = false
 }
+
+onMounted(() => {
+  tgStore.init()
+})
 </script>
 
 <template>
   <div class="min-h-screen bg-slate-50 font-sans text-slate-900 overflow-x-hidden">
     <!-- Test Mode Alert -->
-    <div class="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 text-white text-[11px] font-black uppercase tracking-[0.15em] py-2 text-center flex items-center justify-center gap-4 shadow-md z-[60] relative overflow-hidden border-b border-orange-700/30">
+    <div v-if="!tgStore.tg" class="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 text-white text-[11px] font-black uppercase tracking-[0.15em] py-2 text-center flex items-center justify-center gap-4 shadow-md z-[60] relative overflow-hidden border-b border-orange-700/30">
       <div class="absolute inset-0 bg-white/5 opacity-10 pattern-dots animate-pulse"></div>
       <span class="flex items-center gap-2 relative z-10 drop-shadow-sm">
         <ShieldAlert class="w-3.5 h-3.5" />
@@ -28,6 +34,12 @@ const toggleLang = (lang: string) => {
         <ShieldAlert class="w-3.5 h-3.5" />
       </span>
       <span class="hidden md:inline opacity-80 text-[10px] font-bold relative z-10 border-l border-white/20 pl-4">— BARCHA MA'LUMOTLAR HAQIQIY EMAS —</span>
+    </div>
+    <div v-else class="fixed top-2 right-2 z-[100] animate-pulse">
+       <div class="bg-orange-500/20 backdrop-blur-md border border-orange-500/30 px-2 py-0.5 rounded-full flex items-center gap-1.5 shadow-sm">
+          <div class="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+          <span class="text-[9px] font-black text-orange-600 uppercase tracking-tighter">Test Mode</span>
+       </div>
     </div>
 
     <!-- Top Bar -->
@@ -115,9 +127,14 @@ const toggleLang = (lang: string) => {
         <!-- Right Actions -->
         <div class="flex items-center gap-4">
           <!-- Shaxsiy Kabinet -->
-          <a href="#" class="hidden md:flex items-center justify-center w-12 h-12 rounded-full border border-slate-200 text-slate-500 hover:text-teal-600 hover:border-teal-200 hover:bg-teal-50 transition-all shadow-sm">
-            <User class="w-5 h-5" />
-          </a>
+          <div class="hidden md:flex items-center gap-3">
+            <span v-if="tgStore.user" class="text-sm font-bold text-slate-700">
+              {{ tgStore.userFullName }}
+            </span>
+            <a href="#" class="flex items-center justify-center w-12 h-12 rounded-full border border-slate-200 text-slate-500 hover:text-teal-600 hover:border-teal-200 hover:bg-teal-50 transition-all shadow-sm">
+              <User class="w-5 h-5" />
+            </a>
+          </div>
           
           <!-- Contact Button with Animation -->
           <a href="tel:+998712331111" class="flex items-center gap-3 px-6 py-3.5 bg-gradient-to-r from-[#14b8a6] to-[#0d9488] text-white rounded-2xl hover:shadow-lg hover:shadow-teal-500/30 transition-all group relative overflow-hidden">

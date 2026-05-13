@@ -12,6 +12,19 @@ services:
     networks:
       - ai365-network
 
+  ai365-bot:
+    build:
+      context: ./tgbot
+      dockerfile: Dockerfile
+    container_name: ai365-bot
+    restart: always
+    env_file:
+      - ./tgbot/.env
+    volumes:
+      - ./tgbot/data:/app/data
+    networks:
+      - ai365-network
+
 networks:
   ai365-network:
     driver: bridge
