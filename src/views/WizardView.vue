@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from 'vue'
 import { useWizardStore } from '../stores/wizard'
-import { CheckCircle2, ChevronRight, UserCircle, Car, CreditCard, ShieldAlert, Check, X } from 'lucide-vue-next'
+import { useOsagoStore } from '../stores/osago'
+import { CheckCircle2, ChevronRight, UserCircle, Car, CreditCard, ShieldAlert, Check, X, Copy } from 'lucide-vue-next'
 import { useRouter, useRoute } from 'vue-router'
 
 import OsgovtsForm from '../components/forms/OsgovtsForm.vue'
@@ -10,25 +11,108 @@ import ImushestvoForm from '../components/forms/ImushestvoForm.vue'
 import AccidentForm from '../components/forms/AccidentForm.vue'
 import BasePersonForm from '../components/forms/BasePersonForm.vue'
 
-const store = useWizardStore()
+const wizardStore = useWizardStore()
+const osagoStore = useOsagoStore()
 const router = useRouter()
 const route = useRoute()
 const selectedPaymentMethod = ref('payme')
+const copied = ref(false)
+
+const copyJson = () => {
+  const payload = JSON.stringify(osagoStore.getPayload(), null, 2)
+  navigator.clipboard.writeText(payload)
+  copied.value = true
+  setTimeout(() => copied.value = false, 2000)
+}
 
 // Update policy type from route
 const updatePolicyFromRoute = () => {
   if (route.params.type) {
-    store.formData.policyType = route.params.type as string
-    store.currentStep = 1 // Reset to step 1
+    wizardStore.formData.policyType = route.params.type as string
+    wizardStore.currentStep = 1 // Reset to step 1
   }
+}
+
+const handleOwnerNameInput = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  osagoStore.owner.person.fullName.firstname = input.value.toUpperCase()
+}
+
+const handleOwnerSeriaInput = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  osagoStore.owner.person.passportData.seria = input.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2)
+}
+
+const handleOwnerNumberInput = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  const formatted = input.value.replace(/\D/g, '').slice(0, 7)
+  osagoStore.owner.person.passportData.number = formatted
+  input.value = formatted
+}
+
+const handlePhoneInput = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  let val = input.value.replace(/\D/g, '')
+  if (val.length > 12) val = val.slice(0, 12)
+  
+  let formatted = ''
+  if (val.length > 0) {
+    formatted = '+' + val.slice(0, 3)
+    if (val.length > 3) formatted += ' ' + val.slice(3, 5)
+    if (val.length > 5) formatted += ' ' + val.slice(5, 8)
+    if (val.length > 8) formatted += '-' + val.slice(8, 10)
+    if (val.length > 10) formatted += '-' + val.slice(10, 12)
+  }
+  osagoStore.applicant.person.phoneNumber = formatted
+  input.value = formatted
+}
+
+const handleDateInput = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  let val = input.value.replace(/\D/g, '').slice(0, 8)
+  let formatted = ''
+  if (val.length > 0) {
+    formatted = val.slice(0, 2)
+    if (val.length > 2) formatted += '.' + val.slice(2, 4)
+    if (val.length > 4) formatted += '.' + val.slice(4, 8)
+  }
+  osagoStore.details.startDate = formatted
+  input.value = formatted
+}
+
+const handleDriverSeriaInput = (index: number, e: Event) => {
+  const input = e.target as HTMLInputElement
+  const val = input.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2)
+  osagoStore.drivers[index].passportData.seria = val
+  input.value = val
+}
+
+const handleDriverNumberInput = (index: number, e: Event) => {
+  const input = e.target as HTMLInputElement
+  const val = input.value.replace(/\D/g, '').slice(0, 7)
+  osagoStore.drivers[index].passportData.number = val
+  input.value = val
+}
+
+const handleDriverBirthDateInput = (index: number, e: Event) => {
+  const input = e.target as HTMLInputElement
+  let val = input.value.replace(/\D/g, '').slice(0, 8)
+  let formatted = ''
+  if (val.length > 0) {
+    formatted = val.slice(0, 2)
+    if (val.length > 2) formatted += '.' + val.slice(2, 4)
+    if (val.length > 4) formatted += '.' + val.slice(4, 8)
+  }
+  osagoStore.drivers[index].birthDate = formatted
+  input.value = formatted
 }
 
 onMounted(updatePolicyFromRoute)
 watch(() => route.params.type, updatePolicyFromRoute)
 
 const steps = computed(() => {
-  if (store.formData.policyType === 'osgovts') {
-    if (store.formData.premiumTier === 'standard') {
+  if (wizardStore.formData.policyType === 'osgovts') {
+    if (osagoStore.details.driverNumberRestriction) {
       return [
         { id: 1, title: 'Avto ma\'lumotlari' },
         { id: 2, title: 'Shaxsiy ma\'lumotlar' },
@@ -46,7 +130,7 @@ const steps = computed(() => {
     }
   }
   
-  if (store.formData.policyType === 'baxtsiz') {
+  if (wizardStore.formData.policyType === 'baxtsiz') {
     return [
       { id: 1, title: 'Pasport ma\'lumotlari' },
       { id: 2, title: 'Sug\'urta ma\'lumotlari' },
@@ -62,11 +146,31 @@ const steps = computed(() => {
 })
 
 function handleNext() {
-  if (store.currentStep === steps.value.length) {
+  // Validation for OSAGO Step 1
+  if (wizardStore.formData.policyType === 'osgovts' && wizardStore.currentStep === 1) {
+    if (!osagoStore.vehicle.govNumber || !osagoStore.vehicle.techPassport.seria || !osagoStore.vehicle.techPassport.number) {
+      alert('Iltimos, avtomobil ma\'lumotlarini to\'liq kiriting!')
+      return
+    }
+  }
+  
+  // Validation for OSAGO Step 2
+  if (wizardStore.formData.policyType === 'osgovts' && wizardStore.currentStep === 2) {
+    if (!osagoStore.owner.person.fullName.firstname || 
+        !osagoStore.owner.person.passportData.seria || 
+        !osagoStore.owner.person.passportData.number ||
+        !osagoStore.details.startDate ||
+        !osagoStore.applicant.person.phoneNumber) {
+      alert('Iltimos, mulkdor va polis ma\'lumotlarini to\'liq kiriting!')
+      return
+    }
+  }
+
+  if (wizardStore.currentStep === steps.value.length) {
     alert('Polis muvaffaqiyatli xarid qilindi!')
     router.push('/')
   } else {
-    store.nextStep()
+    wizardStore.nextStep()
   }
 }
 
@@ -112,7 +216,7 @@ const getPolicyTitle = computed(() => {
     kasko: 'VIP KASKO',
     hujjat: 'Shaxsiy hujjatlar'
   }
-  return map[store.formData.policyType as string] || store.formData.policyType || 'Sug\'urta'
+  return map[wizardStore.formData.policyType as string] || wizardStore.formData.policyType || 'Sug\'urta'
 })
 
 const vehicleTypeLabel = computed(() => {
@@ -122,7 +226,7 @@ const vehicleTypeLabel = computed(() => {
     avtobus: 'Avtobus / Mikroavtobus',
     boshqa: 'Boshqa turdagi'
   }
-  return map[store.formData.vehicleType] || ''
+  return map[osagoStore.vehicle.typeId] || ''
 })
 
 const regionLabel = computed(() => {
@@ -131,86 +235,72 @@ const regionLabel = computed(() => {
     viloyat: 'Boshqa viloyatlar',
     chet_el: 'Chet davлат'
   }
-  return map[store.formData.region] || ''
+  return map[osagoStore.vehicle.regionId] || ''
 })
 
 const driversLabel = computed(() => {
-  return store.formData.premiumTier === 'premium' ? 'Cheklanmagan' : 'Cheklangan (5 kishigacha)'
+  return osagoStore.details.driverNumberRestriction ? 'Cheklangan (5 kishigacha)' : 'Cheklanmagan'
 })
 
 const getCalculatedPriceRaw = computed(() => {
-  if (store.formData.policyType === 'osgovts') {
+  if (wizardStore.formData.policyType === 'osgovts') {
     const SS = 80000000;
-    const TB = store.formData.vehicleType === 'yengil' ? 0.2 : (store.formData.vehicleType === 'yuk' ? 0.35 : (store.formData.vehicleType === 'avtobus' ? 0.4 : 0.075));
-    const KT = store.formData.region === 'toshkent' ? 1.2 : (store.formData.region === 'chet_el' ? 2.0 : 1.0);
+    const TB = osagoStore.vehicle.typeId === 'yengil' ? 0.2 : (osagoStore.vehicle.typeId === 'yuk' ? 0.35 : (osagoStore.vehicle.typeId === 'avtobus' ? 0.4 : 0.075));
+    const KT = osagoStore.vehicle.regionId === 'toshkent' ? 1.2 : (osagoStore.vehicle.regionId === 'chet_el' ? 2.0 : 1.0);
     const KBM = 1.0;
     
     let price = 0;
-    if (store.formData.premiumTier === 'premium') { // Cheklanmagan VIP
+    if (!osagoStore.details.driverNumberRestriction) { // Cheklanmagan VIP
       price = (SS * TB * KT * 2.0) / 100;
     } else {
       price = (SS * TB * KT * KBM) / 100;
     }
 
-    if (store.formData.duration === '6') {
+    if (osagoStore.cost.seasonalInsuranceId === '6') {
       price = price * 0.7;
     }
 
-    if (store.formData.hasDiscount) {
-      price = price * 0.5;
+    if (osagoStore.cost.discountId === '1' && osagoStore.applicant.residentOfUzb === 1) { // Example logic for discount
+      // Assuming discount logic here
     }
-
+    
+    // Using a simplified version of the logic from wizardStore but with osagoStore data
     return price;
   }
   
-  if (store.formData.policyType === 'vzr') {
-    // Dastur bo'yicha bazaviy kunlik stavka (UZS)
+  if (wizardStore.formData.policyType === 'vzr') {
+    // ... existing logic but using wizardStore ...
     const rates: Record<string, number> = {
       basic: 4000,
       classic: 7000,
       absolut: 10000
     }
-    const baseRate = rates[store.formData.travelProgram] || 4000
+    const baseRate = rates[wizardStore.formData.travelProgram] || 4000
     
     let days = 1
-    if (store.formData.startDate && store.formData.travelEndDate) {
-      const start = new Date(store.formData.startDate)
-      const end = new Date(store.formData.travelEndDate)
+    if (wizardStore.formData.startDate && wizardStore.formData.travelEndDate) {
+      const start = new Date(wizardStore.formData.startDate)
+      const end = new Date(wizardStore.formData.travelEndDate)
       const diffTime = end.getTime() - start.getTime()
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
       if (diffDays > 0) days = diffDays
     }
     
     let totalSum = 0
-    
-    // Har bir sug'urtalanuvchi uchun alohida hisoblash
-    store.formData.insuredPersons.forEach(person => {
+    wizardStore.formData.insuredPersons.forEach(person => {
       let personPrice = baseRate * days
-      
-      // Yosh koeffitsienti
       const age = person.age || 35
       if (age < 7) personPrice *= 1.5
       else if (age > 65) personPrice *= 2.0
-      
-      // Rezident bo'lmasa narx dollar kursiga (shartli 12600) bo'linadi yoki oshadi
-      // Bu erda shartli ravishda xorijliklar uchun 1.5 baravar qimmatroq qilamiz
-      if (!person.isResident) {
-        personPrice *= 1.5
-      }
-      
+      if (!person.isResident) personPrice *= 1.5
       totalSum += personPrice
     })
-    
-    // Guruh chegirmasi (masalan, 5 kishidan ko'p bo'lsa 5% chegirma)
-    if (store.formData.insuredPersons.length >= 5) {
-      totalSum *= 0.95
-    }
-    
+    if (wizardStore.formData.insuredPersons.length >= 5) totalSum *= 0.95
     return totalSum
   }
 
-  if (store.formData.policyType === 'baxtsiz') {
-    return (store.formData.accidentData.coverage || 0) * 0.01;
+  if (wizardStore.formData.policyType === 'baxtsiz') {
+    return (wizardStore.formData.accidentData.coverage || 0) * 0.01;
   }
 
   const basePrices: Record<string, number> = {
@@ -220,10 +310,8 @@ const getCalculatedPriceRaw = computed(() => {
     kasko: 900000,
     hujjat: 49000
   }
-  let price = basePrices[store.formData.policyType as string] || 0
-  if (store.formData.premiumTier === 'premium') {
-    price = price * 2.5
-  }
+  let price = basePrices[wizardStore.formData.policyType as string] || 0
+  if (wizardStore.formData.premiumTier === 'premium') price = price * 2.5
   return price
 })
 
@@ -236,23 +324,23 @@ const currentFormComponent = computed(() => {
     baxtsiz: AccidentForm,
     hujjat: BasePersonForm
   }
-  return map[store.formData.policyType as string] || BasePersonForm
+  return map[wizardStore.formData.policyType as string] || BasePersonForm
 })
 
 const getCalculatedPrice = computed(() => {
   const price = getCalculatedPriceRaw.value;
-  if (store.formData.policyType === 'vzr' && !store.formData.isResident) {
+  if (wizardStore.formData.policyType === 'vzr' && !wizardStore.formData.isResident) {
     return '$ ' + price.toFixed(2);
   }
   return new Intl.NumberFormat('uz-UZ').format(Math.round(price)) + ' UZS'
 })
 
 const getLimitAmount = computed(() => {
-  if (store.formData.policyType === 'vzr') {
-    return store.formData.premiumTier === 'premium' ? '50 000 000 UZS' : '5 000 000 UZS'
+  if (wizardStore.formData.policyType === 'vzr') {
+    return wizardStore.formData.premiumTier === 'premium' ? '50 000 000 UZS' : '5 000 000 UZS'
   }
-  if (store.formData.policyType === 'baxtsiz') {
-    return new Intl.NumberFormat('uz-UZ').format(store.formData.accidentData.coverage) + ' UZS'
+  if (wizardStore.formData.policyType === 'baxtsiz') {
+    return new Intl.NumberFormat('uz-UZ').format(wizardStore.formData.accidentData.coverage) + ' UZS'
   }
   return '80 000 000 UZS'
 })
@@ -270,20 +358,20 @@ const getLimitAmount = computed(() => {
             v-for="step in steps" 
             :key="step.id"
             class="flex-1 min-w-[120px] relative rounded-[18px] flex flex-col items-center justify-center py-3 px-2 transition-all duration-500"
-            :class="store.currentStep === step.id ? 'bg-white shadow-[0_8px_30px_rgba(20,184,166,0.15)] ring-1 ring-slate-200/50 transform scale-100 z-10' : 'transform scale-95 opacity-70 hover:opacity-100'"
+            :class="wizardStore.currentStep === step.id ? 'bg-white shadow-[0_8px_30px_rgba(20,184,166,0.15)] ring-1 ring-slate-200/50 transform scale-100 z-10' : 'transform scale-95 opacity-70 hover:opacity-100'"
           >
             <div class="flex items-center justify-center mb-2">
               <div 
                 class="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-black transition-all duration-500"
-                :class="store.currentStep === step.id ? 'bg-gradient-to-br from-[#2dd4bf] to-[#0d9488] text-white shadow-lg shadow-teal-500/30' : (store.currentStep > step.id ? 'bg-teal-100 text-teal-600' : 'bg-slate-200 text-slate-500')"
+                :class="wizardStore.currentStep === step.id ? 'bg-gradient-to-br from-[#2dd4bf] to-[#0d9488] text-white shadow-lg shadow-teal-500/30' : (wizardStore.currentStep > step.id ? 'bg-teal-100 text-teal-600' : 'bg-slate-200 text-slate-500')"
               >
-                <Check v-if="store.currentStep > step.id" class="w-4 h-4 stroke-[3]" />
+                <Check v-if="wizardStore.currentStep > step.id" class="w-4 h-4 stroke-[3]" />
                 <span v-else>{{ step.id }}</span>
               </div>
             </div>
             <span 
               class="text-[12px] md:text-sm text-center font-bold transition-colors whitespace-nowrap"
-              :class="store.currentStep === step.id ? 'text-slate-800' : 'text-slate-500'"
+              :class="wizardStore.currentStep === step.id ? 'text-slate-800' : 'text-slate-500'"
             >
               {{ step.title }}
             </span>
@@ -295,70 +383,97 @@ const getLimitAmount = computed(() => {
       <div class="glass-card p-6 md:p-10 min-h-[400px] flex flex-col">
         
         <!-- Wizard Form Component -->
-        <div v-if="store.currentStep === 1 || (['baxtsiz', 'vzr', 'imushestvo', 'hujjat'].includes(store.formData.policyType) && store.currentStep < steps.length)" class="flex-1 animate-in fade-in slide-in-from-right-4 duration-500">
+        <div v-if="wizardStore.currentStep === 1 || (['baxtsiz', 'vzr', 'imushestvo', 'hujjat'].includes(wizardStore.formData.policyType) && wizardStore.currentStep < steps.length)" class="flex-1 animate-in fade-in slide-in-from-right-4 duration-500">
           <component :is="currentFormComponent" />
         </div>
 
         <!-- STEP 2 (OSAGO): Shaxsiy ma'lumotlar -->
-        <div v-if="store.currentStep === 2 && store.formData.policyType === 'osgovts'" class="flex-1 animate-in fade-in slide-in-from-right-4 duration-500">
+        <div v-if="wizardStore.currentStep === 2 && wizardStore.formData.policyType === 'osgovts'" class="flex-1 animate-in fade-in slide-in-from-right-4 duration-500">
           <h3 class="text-[22px] font-bold text-slate-800 mb-6 tracking-tight">Avto mulkdori haqida ma'lumot</h3>
           
           <div class="mb-6">
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Avtomobil egasi</label>
+            <label class="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-1">
+              Avtomobil egasi
+              <span class="text-red-500">*</span>
+            </label>
             <input 
-              v-model="store.formData.ownerName"
+              :value="osagoStore.owner.person.fullName.firstname"
+              @input="handleOwnerNameInput"
               type="text" 
               placeholder="TAYLAKOV ULUGBEK NORBEKOVICH" 
-              class="w-full bg-slate-50 border-0 rounded-2xl px-5 py-3.5 text-slate-900 font-medium outline-none focus:ring-2 focus:ring-[#14b8a6] transition-all"
+              class="w-full bg-slate-50 border-0 rounded-2xl px-5 py-3.5 text-slate-900 font-medium uppercase outline-none focus:ring-2 focus:ring-[#14b8a6] transition-all"
+              required
             />
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-2">Pasport seriya va raqami/ID</label>
+              <label class="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-1">
+                Pasport seriya va raqami/ID
+                <span class="text-red-500">*</span>
+              </label>
               <div class="flex gap-3">
                 <input 
-                  v-model="store.formData.passportSeries"
+                  :value="osagoStore.owner.person.passportData.seria"
+                  @input="handleOwnerSeriaInput"
                   type="text" 
                   placeholder="AA" 
                   class="w-20 bg-slate-50 border-0 rounded-2xl px-4 py-3.5 text-slate-900 font-medium uppercase outline-none focus:ring-2 focus:ring-[#14b8a6] transition-all text-center"
+                  maxlength="2"
+                  required
                 />
                 <input 
-                  v-model="store.formData.passportNumber"
+                  :value="osagoStore.owner.person.passportData.number"
+                  @input="handleOwnerNumberInput"
                   type="text" 
                   placeholder="0000000" 
                   class="flex-1 bg-slate-50 border-0 rounded-2xl px-5 py-3.5 text-slate-900 font-medium outline-none focus:ring-2 focus:ring-[#14b8a6] transition-all"
+                  maxlength="7"
+                  required
                 />
               </div>
             </div>
             
             <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-2">Sug'urtaning boshlanish kunini kiriting</label>
+              <label class="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-1">
+                Sug'urtaning boshlanish kunini kiriting
+                <span class="text-red-500">*</span>
+              </label>
               <input 
-                v-model="store.formData.startDate"
+                :value="osagoStore.details.startDate"
+                @input="handleDateInput"
                 type="text" 
+                inputmode="numeric"
                 placeholder="11.05.2026" 
                 class="w-full bg-slate-50 border-0 rounded-2xl px-5 py-3.5 text-slate-900 font-medium outline-none focus:ring-2 focus:ring-[#14b8a6] transition-all"
+                maxlength="10"
+                required
               />
             </div>
           </div>
 
           <div class="mb-6">
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Telefon</label>
+            <label class="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-1">
+              Telefon
+              <span class="text-red-500">*</span>
+            </label>
             <input 
-              v-model="store.formData.phone"
+              :value="osagoStore.applicant.person.phoneNumber"
+              @input="handlePhoneInput"
               type="text" 
-              placeholder="+998 90 971 01 11" 
+              inputmode="tel"
+              placeholder="+998 90 971-01-11" 
               class="w-full bg-slate-50 border-0 rounded-2xl px-5 py-3.5 text-slate-900 font-medium outline-none focus:ring-2 focus:ring-[#14b8a6] transition-all"
+              required
             />
           </div>
 
           <div class="mb-6">
-            <label class="flex items-start gap-3 cursor-pointer p-4 bg-slate-50 rounded-2xl border-0 transition-all duration-300" :class="store.formData.hasDiscount ? 'ring-2 ring-[#14b8a6]' : 'hover:bg-slate-100'">
+            <label class="flex items-start gap-3 cursor-pointer p-4 bg-slate-50 rounded-2xl border-0 transition-all duration-300" :class="osagoStore.cost.discountId === '1' ? 'ring-2 ring-[#14b8a6]' : 'hover:bg-slate-100'">
               <div class="relative flex items-center justify-center mt-0.5">
-                <input type="checkbox" v-model="store.formData.hasDiscount" class="peer sr-only" />
+                <input type="checkbox" :true-value="'1'" :false-value="'0'" v-model="osagoStore.cost.discountId" class="peer sr-only" />
                 <div class="w-5 h-5 border-2 border-slate-300 rounded peer-checked:bg-[#14b8a6] peer-checked:border-[#14b8a6] transition-all flex items-center justify-center">
-                  <Check v-if="store.formData.hasDiscount" class="w-3.5 h-3.5 text-white" />
+                  <Check v-if="osagoStore.cost.discountId === '1'" class="w-3.5 h-3.5 text-white" />
                 </div>
               </div>
               <div class="flex-1">
@@ -370,17 +485,17 @@ const getLimitAmount = computed(() => {
         </div>
 
         <!-- STEP 2 (Other): Policy Options -->
-        <div v-if="store.currentStep === 2 && !['osgovts', 'baxtsiz'].includes(store.formData.policyType)" class="flex-1 animate-in fade-in slide-in-from-right-4 duration-500">
+        <div v-if="wizardStore.currentStep === 2 && !['osgovts', 'baxtsiz'].includes(wizardStore.formData.policyType)" class="flex-1 animate-in fade-in slide-in-from-right-4 duration-500">
           <h2 class="text-2xl font-bold mb-6 text-slate-900">Polis ta'rifini tanlang</h2>
           
           <div class="grid gap-4">
             <!-- Travel STANDART -->
             <label 
-              v-if="store.formData.policyType === 'vzr'"
+              v-if="wizardStore.formData.policyType === 'vzr'"
               class="relative flex cursor-pointer p-6 rounded-2xl border-2 transition-all duration-300"
-              :class="store.formData.premiumTier === 'standard' ? 'border-teal-500 bg-teal-50/30' : 'border-slate-100 bg-white hover:border-teal-200'"
+              :class="wizardStore.formData.premiumTier === 'standard' ? 'border-teal-500 bg-teal-50/30' : 'border-slate-100 bg-white hover:border-teal-200'"
             >
-              <input type="radio" value="standard" v-model="store.formData.premiumTier" class="sr-only" />
+              <input type="radio" value="standard" v-model="wizardStore.formData.premiumTier" class="sr-only" />
               <div class="flex-1">
                 <div class="flex justify-between items-start mb-2">
                   <span class="text-xl font-bold text-slate-900">STANDART</span>
@@ -403,11 +518,11 @@ const getLimitAmount = computed(() => {
 
             <!-- Travel COMFORT -->
             <label 
-              v-if="store.formData.policyType === 'vzr'"
+              v-if="wizardStore.formData.policyType === 'vzr'"
               class="relative flex cursor-pointer p-6 rounded-2xl border-2 transition-all duration-300"
-              :class="store.formData.premiumTier === 'premium' ? 'border-teal-500 bg-teal-50/30 shadow-lg' : 'border-slate-100 bg-white hover:border-teal-200'"
+              :class="wizardStore.formData.premiumTier === 'premium' ? 'border-teal-500 bg-teal-50/30 shadow-lg' : 'border-slate-100 bg-white hover:border-teal-200'"
             >
-              <input type="radio" value="premium" v-model="store.formData.premiumTier" class="sr-only" />
+              <input type="radio" value="premium" v-model="wizardStore.formData.premiumTier" class="sr-only" />
               <div class="flex-1">
                 <div class="flex justify-between items-start mb-2">
                   <div class="flex items-center gap-2">
@@ -435,12 +550,12 @@ const getLimitAmount = computed(() => {
             </label>
 
             <!-- Generic Options for other types -->
-            <template v-if="store.formData.policyType !== 'vzr' && store.formData.policyType !== 'osgovts'">
+            <template v-if="wizardStore.formData.policyType !== 'vzr' && wizardStore.formData.policyType !== 'osgovts'">
               <label 
                 class="relative flex cursor-pointer p-5 rounded-xl border transition-all duration-300"
-                :class="store.formData.premiumTier === 'standard' ? 'bg-primary-50 border-primary-500 shadow-[0_0_15px_rgba(30,58,138,0.1)]' : 'bg-white border-slate-200 hover:bg-slate-50'"
+                :class="wizardStore.formData.premiumTier === 'standard' ? 'bg-primary-50 border-primary-500 shadow-[0_0_15px_rgba(30,58,138,0.1)]' : 'bg-white border-slate-200 hover:bg-slate-50'"
               >
-                <input type="radio" value="standard" v-model="store.formData.premiumTier" class="sr-only" />
+                <input type="radio" value="standard" v-model="wizardStore.formData.premiumTier" class="sr-only" />
                 <div class="flex-1">
                   <span class="block text-lg font-bold text-slate-900 mb-1">Standard Himoya</span>
                   <span class="block text-sm text-slate-500">Baza va tayanch xizmatlar.</span>
@@ -449,9 +564,9 @@ const getLimitAmount = computed(() => {
 
               <label 
                 class="relative flex cursor-pointer p-5 rounded-xl border transition-all duration-300"
-                :class="store.formData.premiumTier === 'premium' ? 'bg-orange-50 border-accent-500 shadow-[0_0_15_rgba(217,119,6,0.1)]' : 'bg-white border-slate-200 hover:bg-slate-50'"
+                :class="wizardStore.formData.premiumTier === 'premium' ? 'bg-orange-50 border-accent-500 shadow-[0_0_15_rgba(217,119,6,0.1)]' : 'bg-white border-slate-200 hover:bg-slate-50'"
               >
-                <input type="radio" value="premium" v-model="store.formData.premiumTier" class="sr-only" />
+                <input type="radio" value="premium" v-model="wizardStore.formData.premiumTier" class="sr-only" />
                 <div class="flex-1">
                   <span class="block text-lg font-bold text-slate-900 mb-1">VIP Qoplash </span>
                   <span class="block text-sm text-slate-500">Kengaytirilgan himoya va qo'shimcha yordam.</span>
@@ -462,7 +577,7 @@ const getLimitAmount = computed(() => {
         </div>
 
         <!-- STEP 3 (OSAGO): Policy Options -->
-        <div v-if="store.currentStep === 3 && store.formData.policyType === 'osgovts'" class="flex-1 animate-in fade-in slide-in-from-right-4 duration-500">
+        <div v-if="wizardStore.currentStep === 3 && wizardStore.formData.policyType === 'osgovts'" class="flex-1 animate-in fade-in slide-in-from-right-4 duration-500">
           <h3 class="text-[22px] font-bold text-slate-800 mb-6 tracking-tight">Polis</h3>
           
           <div class="mb-8">
@@ -471,31 +586,29 @@ const getLimitAmount = computed(() => {
               <!-- Premium (VIP) -->
               <label 
                 class="relative flex flex-col cursor-pointer p-6 rounded-3xl border-0 transition-all duration-300"
-                :class="store.formData.premiumTier === 'premium' ? 'bg-teal-50 ring-2 ring-teal-400' : 'bg-slate-50 hover:bg-slate-100'"
+                :class="!osagoStore.details.driverNumberRestriction ? 'bg-teal-50 ring-2 ring-teal-400' : 'bg-slate-50 hover:bg-slate-100'"
               >
-                <input type="radio" value="premium" v-model="store.formData.premiumTier" class="sr-only" />
+                <input type="radio" :value="false" v-model="osagoStore.details.driverNumberRestriction" class="sr-only" />
                 <div class="flex items-center justify-between mb-4">
                   <span class="text-lg font-bold text-slate-800">Cheklanmagan (VIP)</span>
                   <div class="w-6 h-6 rounded-full border-4 transition-colors"
-                       :class="store.formData.premiumTier === 'premium' ? 'border-teal-400 bg-teal-500' : 'border-slate-200 bg-white'">
+                       :class="!osagoStore.details.driverNumberRestriction ? 'border-teal-400 bg-teal-500' : 'border-slate-200 bg-white'">
                   </div>
                 </div>
-             
               </label>
 
               <!-- Standard -->
               <label 
                 class="relative flex flex-col cursor-pointer p-6 rounded-3xl border-0 transition-all duration-300"
-                :class="store.formData.premiumTier === 'standard' ? 'bg-teal-50 ring-2 ring-teal-400' : 'bg-slate-50 hover:bg-slate-100'"
+                :class="osagoStore.details.driverNumberRestriction ? 'bg-teal-50 ring-2 ring-teal-400' : 'bg-slate-50 hover:bg-slate-100'"
               >
-                <input type="radio" value="standard" v-model="store.formData.premiumTier" class="sr-only" />
+                <input type="radio" :value="true" v-model="osagoStore.details.driverNumberRestriction" class="sr-only" />
                 <div class="flex items-center justify-between mb-4">
                   <span class="text-lg font-bold text-slate-800">Cheklangan (5 haydovchigacha)</span>
                   <div class="w-6 h-6 rounded-full border-4 transition-colors"
-                       :class="store.formData.premiumTier === 'standard' ? 'border-teal-400 bg-teal-500' : 'border-slate-200 bg-white'">
+                       :class="osagoStore.details.driverNumberRestriction ? 'border-teal-400 bg-teal-500' : 'border-slate-200 bg-white'">
                   </div>
                 </div>
-                
               </label>
             </div>
           </div>
@@ -505,22 +618,22 @@ const getLimitAmount = computed(() => {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <label 
                 class="relative flex items-center justify-between cursor-pointer p-5 rounded-2xl border-0 transition-all duration-300"
-                :class="store.formData.duration === '12' ? 'bg-teal-50 ring-2 ring-teal-400' : 'bg-slate-50 hover:bg-slate-100'"
+                :class="osagoStore.cost.seasonalInsuranceId === '12' ? 'bg-teal-50 ring-2 ring-teal-400' : 'bg-slate-50 hover:bg-slate-100'"
               >
-                <input type="radio" value="12" v-model="store.formData.duration" class="sr-only" />
+                <input type="radio" value="12" v-model="osagoStore.cost.seasonalInsuranceId" class="sr-only" />
                 <span class="text-lg font-medium text-slate-800">12 oy</span>
                 <div class="w-6 h-6 rounded-full border-4 transition-colors"
-                     :class="store.formData.duration === '12' ? 'border-teal-400 bg-teal-500' : 'border-slate-200 bg-white'">
+                     :class="osagoStore.cost.seasonalInsuranceId === '12' ? 'border-teal-400 bg-teal-500' : 'border-slate-200 bg-white'">
                 </div>
               </label>
               <label 
                 class="relative flex items-center justify-between cursor-pointer p-5 rounded-2xl border-0 transition-all duration-300"
-                :class="store.formData.duration === '6' ? 'bg-teal-50 ring-2 ring-teal-400' : 'bg-slate-50 hover:bg-slate-100'"
+                :class="osagoStore.cost.seasonalInsuranceId === '6' ? 'bg-teal-50 ring-2 ring-teal-400' : 'bg-slate-50 hover:bg-slate-100'"
               >
-                <input type="radio" value="6" v-model="store.formData.duration" class="sr-only" />
+                <input type="radio" value="6" v-model="osagoStore.cost.seasonalInsuranceId" class="sr-only" />
                 <span class="text-lg font-medium text-slate-800">6 oy</span>
                 <div class="w-6 h-6 rounded-full border-4 transition-colors"
-                     :class="store.formData.duration === '6' ? 'border-teal-400 bg-teal-500' : 'border-slate-200 bg-white'">
+                     :class="osagoStore.cost.seasonalInsuranceId === '6' ? 'border-teal-400 bg-teal-500' : 'border-slate-200 bg-white'">
                 </div>
               </label>
             </div>
@@ -528,7 +641,7 @@ const getLimitAmount = computed(() => {
         </div>
 
         <!-- STEP 4 (OSAGO Standard): Haydovchilar -->
-        <div v-if="store.currentStep === 4 && store.formData.policyType === 'osgovts' && store.formData.premiumTier === 'standard'" class="flex-1 animate-in fade-in slide-in-from-right-4 duration-500">
+        <div v-if="wizardStore.currentStep === 4 && wizardStore.formData.policyType === 'osgovts' && osagoStore.details.driverNumberRestriction" class="flex-1 animate-in fade-in slide-in-from-right-4 duration-500">
           <h3 class="text-[22px] font-bold text-slate-800 mb-6 tracking-tight">Haydovchilar</h3>
 
           <!-- Haydovchi 1 -->
@@ -538,7 +651,7 @@ const getLimitAmount = computed(() => {
               <button class="text-red-500 text-sm font-medium hover:text-red-600 transition-colors">O'chirish</button>
             </div>
             <input 
-              v-model="store.formData.ownerName"
+              v-model="osagoStore.owner.person.fullName.firstname"
               type="text" 
               readonly
               class="w-full bg-slate-50 border-0 rounded-2xl px-5 py-3.5 text-slate-900 font-medium outline-none opacity-80"
@@ -546,26 +659,31 @@ const getLimitAmount = computed(() => {
           </div>
 
           <!-- Additional Drivers -->
-          <div v-for="(driver, index) in store.formData.drivers" :key="index" class="mb-6 relative">
+          <div v-for="(driver, index) in osagoStore.drivers" :key="index" class="mb-6 relative">
             <div class="flex items-center justify-between mb-2">
               <label class="text-sm font-semibold text-slate-700">Haydovchi {{ index + 2 }}</label>
-              <button @click="store.formData.drivers.splice(index, 1)" class="text-red-500 text-sm font-medium hover:text-red-600 transition-colors">O'chirish</button>
+              <button @click="osagoStore.drivers.splice(index, 1)" class="text-red-500 text-sm font-medium hover:text-red-600 transition-colors">O'chirish</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">Pasport seriya va raqami/ID</label>
                 <div class="flex gap-3">
                   <input 
-                    v-model="driver.passportSeries"
+                    :value="driver.passportData.seria"
+                    @input="handleDriverSeriaInput(index, $event)"
                     type="text" 
                     placeholder="AA" 
                     class="w-20 bg-slate-50 border-0 rounded-2xl px-4 py-3.5 text-slate-900 font-medium uppercase outline-none focus:ring-2 focus:ring-[#14b8a6] transition-all text-center"
+                    maxlength="2"
                   />
                   <input 
-                    v-model="driver.passportNumber"
+                    :value="driver.passportData.number"
+                    @input="handleDriverNumberInput(index, $event)"
                     type="text" 
+                    inputmode="numeric"
                     placeholder="0000000" 
                     class="flex-1 bg-slate-50 border-0 rounded-2xl px-5 py-3.5 text-slate-900 font-medium outline-none focus:ring-2 focus:ring-[#14b8a6] transition-all"
+                    maxlength="7"
                   />
                 </div>
               </div>
@@ -573,10 +691,13 @@ const getLimitAmount = computed(() => {
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">Tug'ilgan sanasi</label>
                 <input 
-                  v-model="driver.dob"
+                  :value="driver.birthDate"
+                  @input="handleDriverBirthDateInput(index, $event)"
                   type="text" 
+                  inputmode="numeric"
                   placeholder="18.06.2004" 
                   class="w-full bg-slate-50 border-0 rounded-2xl px-5 py-3.5 text-slate-900 font-medium outline-none focus:ring-2 focus:ring-[#14b8a6] transition-all"
+                  maxlength="10"
                 />
               </div>
             </div>
@@ -585,8 +706,8 @@ const getLimitAmount = computed(() => {
           <!-- Add driver button -->
           <div class="flex justify-center mt-4">
             <button 
-              v-if="store.formData.drivers.length < 4"
-              @click="store.formData.drivers.push({ passportSeries: '', passportNumber: '', dob: '' })"
+              v-if="osagoStore.drivers.length < 4"
+              @click="osagoStore.drivers.push({ passportData: { seria: '', number: '' }, birthDate: '' })"
               class="flex items-center gap-2 text-slate-600 font-medium hover:text-slate-900 transition-colors py-2 px-4 rounded-xl hover:bg-slate-100"
             >
               <span class="text-xl leading-none font-light">+</span> Yana haydovchi qo'shish
@@ -595,12 +716,12 @@ const getLimitAmount = computed(() => {
         </div>
 
         <!-- STEP 3 (Other) / STEP 4/5 (OSAGO): Payment -->
-        <div v-if="store.currentStep === steps.length" class="flex-1 animate-in fade-in slide-in-from-right-4 duration-500">
+        <div v-if="wizardStore.currentStep === steps.length" class="flex-1 animate-in fade-in slide-in-from-right-4 duration-500">
           <h2 class="text-2xl font-bold mb-6 text-slate-900">Xaridni yakunlash</h2>
           <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-6">
             <div class="flex justify-between mb-4">
               <span class="text-slate-600">Polis turi:</span>
-              <span class="text-slate-900 font-medium capitalize">{{ getPolicyTitle }} - {{ store.formData.premiumTier }}</span>
+              <span class="text-slate-900 font-medium capitalize">{{ getPolicyTitle }}</span>
             </div>
             <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-200">
               <span class="text-slate-600">Jami to'lov:</span>
@@ -660,13 +781,35 @@ const getLimitAmount = computed(() => {
               </label>
             </div>
           </div>
+
+          <!-- JSON Debug Preview (Only for OSAGO on final step) -->
+          <div v-if="wizardStore.formData.policyType === 'osgovts'" class="mt-12 pt-8 border-t border-slate-100">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2 text-slate-400">
+                <div class="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></div>
+                <span class="text-[11px] font-bold uppercase tracking-[0.2em]">Yig'ilgan JSON Payload (Real-time)</span>
+              </div>
+              <button 
+                @click="copyJson" 
+                class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition-all"
+              >
+                <Check v-if="copied" class="w-3.5 h-3.5 text-teal-600" />
+                <Copy v-else class="w-3.5 h-3.5" />
+                <span>{{ copied ? 'Nusxalandi!' : 'JSONni nusxalash' }}</span>
+              </button>
+            </div>
+            <div class="bg-slate-900 rounded-3xl p-6 overflow-hidden shadow-2xl relative group border border-slate-800">
+              <div class="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-transparent pointer-events-none"></div>
+              <pre class="text-[12px] font-mono text-teal-400/90 leading-relaxed overflow-x-auto custom-scrollbar max-h-[400px]">{{ JSON.stringify(osagoStore.getPayload(), null, 2) }}</pre>
+            </div>
+          </div>
         </div>
 
         <!-- Controls -->
         <div class="mt-8 flex items-center gap-4 pt-6">
           <button 
-            @click="store.prevStep"
-            v-if="store.currentStep > 1"
+            @click="wizardStore.prevStep"
+            v-if="wizardStore.currentStep > 1"
             class="px-6 py-3.5 rounded-2xl bg-slate-200 text-slate-700 font-bold hover:bg-slate-300 transition-all flex items-center gap-2"
           >
             <ChevronRight class="w-4 h-4 rotate-180" />
@@ -677,8 +820,8 @@ const getLimitAmount = computed(() => {
             @click="handleNext"
             class="px-8 py-3.5 rounded-2xl bg-[#14b8a6] text-white font-bold flex items-center gap-2 hover:bg-teal-600 active:scale-[0.98] transition-all"
           >
-            {{ store.currentStep === steps.length ? 'To\'lash' : (store.currentStep === steps.length - 1 ? 'To\'lovga o\'tish' : 'Davom etish') }}
-            <ChevronRight v-if="store.currentStep !== steps.length" class="w-4 h-4" />
+            {{ wizardStore.currentStep === steps.length ? 'To\'lash' : (wizardStore.currentStep === steps.length - 1 ? 'To\'lovga o\'tish' : 'Davom etish') }}
+            <ChevronRight v-if="wizardStore.currentStep !== steps.length" class="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -697,49 +840,49 @@ const getLimitAmount = computed(() => {
         </div>
         
         <div class="space-y-4 text-[14.5px] mb-8 border-b border-slate-100 pb-6 relative z-10">
-          <div class="flex justify-between items-center" v-if="store.formData.policyType !== 'vzr'">
+          <div class="flex justify-between items-center" v-if="wizardStore.formData.policyType !== 'vzr'">
             <span class="text-slate-500 font-medium">Sug'urta muddati</span>
             <span class="font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-lg">1 yillik</span>
           </div>
           
-          <div class="flex justify-between items-center" v-if="store.formData.policyType === 'vzr'">
+          <div class="flex justify-between items-center" v-if="wizardStore.formData.policyType === 'vzr'">
             <span class="text-slate-500 font-medium">Sayohat kunlari</span>
             <span class="font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-lg">
-              {{ store.formData.startDate && store.formData.travelEndDate ? Math.max(1, Math.ceil((new Date(store.formData.travelEndDate).getTime() - new Date(store.formData.startDate).getTime()) / (1000 * 60 * 60 * 24))) : 1 }} kun
+              {{ wizardStore.formData.startDate && wizardStore.formData.travelEndDate ? Math.max(1, Math.ceil((new Date(wizardStore.formData.travelEndDate).getTime() - new Date(wizardStore.formData.startDate).getTime()) / (1000 * 60 * 60 * 24))) : 1 }} kun
             </span>
           </div>
           
-          <div class="flex justify-between items-center" v-if="store.formData.policyType === 'vzr'">
+          <div class="flex justify-between items-center" v-if="wizardStore.formData.policyType === 'vzr'">
             <span class="text-slate-500 font-medium">Mamlakat</span>
-            <span class="font-bold text-slate-800 text-right">{{ store.formData.travelCountries.join(', ') || 'Tanlanmagan' }}</span>
+            <span class="font-bold text-slate-800 text-right">{{ wizardStore.formData.travelCountries.join(', ') || 'Tanlanmagan' }}</span>
           </div>
 
-          <div class="flex justify-between items-center" v-if="store.formData.policyType === 'vzr'">
+          <div class="flex justify-between items-center" v-if="wizardStore.formData.policyType === 'vzr'">
             <span class="text-slate-500 font-medium">Sayohatchilar</span>
-            <span class="font-bold text-slate-800">{{ store.formData.insuredPersons.length }} kishi</span>
+            <span class="font-bold text-slate-800">{{ wizardStore.formData.insuredPersons.length }} kishi</span>
           </div>
 
-          <div class="flex justify-between items-center" v-if="store.formData.policyType === 'vzr'">
+          <div class="flex justify-between items-center" v-if="wizardStore.formData.policyType === 'vzr'">
             <span class="text-slate-500 font-medium">Rezidentlik</span>
-            <span class="font-bold text-slate-800">{{ store.formData.insuredPersons[0].isResident ? 'O\'zbekiston' : 'Xorijiy' }}</span>
+            <span class="font-bold text-slate-800">{{ wizardStore.formData.insuredPersons[0].isResident ? 'O\'zbekiston' : 'Xorijiy' }}</span>
           </div>
           
-          <div class="flex justify-between items-center" v-if="store.formData.policyType === 'osgovts'">
+          <div class="flex justify-between items-center" v-if="wizardStore.formData.policyType === 'osgovts'">
             <span class="text-slate-500 font-medium">Transport turi</span>
             <span class="font-bold text-slate-800 text-right ml-4">{{ vehicleTypeLabel }}</span>
           </div>
           
-          <div class="flex justify-between items-center" v-if="store.formData.policyType === 'osgovts'">
+          <div class="flex justify-between items-center" v-if="wizardStore.formData.policyType === 'osgovts'">
             <span class="text-slate-500 font-medium">Hudud</span>
             <span class="font-bold text-slate-800 text-right ml-4">{{ regionLabel }}</span>
           </div>
           
-          <div class="flex justify-between items-center" v-if="store.formData.policyType === 'osgovts' || store.formData.policyType === 'kasko'">
+          <div class="flex justify-between items-center" v-if="wizardStore.formData.policyType === 'osgovts' || wizardStore.formData.policyType === 'kasko'">
             <span class="text-slate-500 font-medium">Haydovchilar soni</span>
             <span class="font-bold text-slate-800">{{ driversLabel }}</span>
           </div>
           
-          <div class="flex justify-between items-center" v-if="store.formData.policyType === 'osgovts' || store.formData.policyType === 'vzr' || store.formData.policyType === 'baxtsiz'">
+          <div class="flex justify-between items-center" v-if="wizardStore.formData.policyType === 'osgovts' || wizardStore.formData.policyType === 'vzr' || wizardStore.formData.policyType === 'baxtsiz'">
             <span class="text-slate-500 font-medium">Qoplash miqdori</span>
             <span class="font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-lg">{{ getLimitAmount }}</span>
           </div>
@@ -756,7 +899,7 @@ const getLimitAmount = computed(() => {
       </div>
 
       <!-- Detail Wow Facts Box -->
-      <div v-if="policyDetails[store.formData.policyType as string]" class="glass-card p-6 border border-slate-200 bg-slate-50/80 shadow-sm animate-in fade-in duration-500">
+      <div v-if="policyDetails[wizardStore.formData.policyType as string]" class="glass-card p-6 border border-slate-200 bg-slate-50/80 shadow-sm animate-in fade-in duration-500">
         <div class="flex items-center gap-2 mb-4">
           <ShieldAlert class="w-5 h-5 text-accent-500" />
           <h4 class="text-sm font-bold uppercase tracking-wider text-slate-800">Батафсил маълумот</h4>
@@ -764,7 +907,7 @@ const getLimitAmount = computed(() => {
         
         <div class="text-[13.5px] text-slate-600 space-y-4 leading-relaxed">
           <p 
-            v-for="(paragraph, index) in policyDetails[store.formData.policyType as string]" 
+            v-for="(paragraph, index) in policyDetails[wizardStore.formData.policyType as string]" 
             :key="index" 
             v-html="paragraph"
             class="p-0 m-0"

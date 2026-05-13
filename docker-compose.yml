@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  ai365-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai365-frontend
+    ports:
+      - "80:80"
+    restart: always
+    networks:
+      - ai365-network
+
+networks:
+  ai365-network:
+    driver: bridge
