@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Phone, Mail, MapPin, Send, Instagram, Facebook, User, ChevronDown, ShieldCheck, HelpCircle } from 'lucide-vue-next'
+import { Phone, Mail, MapPin, Send, Instagram, Facebook, User, ChevronDown, ShieldCheck, HelpCircle, ShieldAlert } from 'lucide-vue-next'
 import { ref } from 'vue'
 
 const currentLang = ref('UZ')
@@ -19,6 +19,17 @@ const toggleLang = (lang: string) => {
 
 <template>
   <div class="min-h-screen bg-slate-50 font-sans text-slate-900 overflow-x-hidden">
+    <!-- Test Mode Alert -->
+    <div class="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 text-white text-[11px] font-black uppercase tracking-[0.15em] py-2 text-center flex items-center justify-center gap-4 shadow-md z-[60] relative overflow-hidden border-b border-orange-700/30">
+      <div class="absolute inset-0 bg-white/5 opacity-10 pattern-dots animate-pulse"></div>
+      <span class="flex items-center gap-2 relative z-10 drop-shadow-sm">
+        <ShieldAlert class="w-3.5 h-3.5" />
+        DIQQAT: Tizim TEST rejimida ishlamoqda
+        <ShieldAlert class="w-3.5 h-3.5" />
+      </span>
+      <span class="hidden md:inline opacity-80 text-[10px] font-bold relative z-10 border-l border-white/20 pl-4">— BARCHA MA'LUMOTLAR HAQIQIY EMAS —</span>
+    </div>
+
     <!-- Top Bar -->
     <div class="bg-slate-900 text-slate-300 py-2 hidden md:block border-b border-slate-800">
       <div class="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between text-[13px] font-medium">

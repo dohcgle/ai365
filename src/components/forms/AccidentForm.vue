@@ -1,9 +1,47 @@
 <script setup lang="ts">
-import { watch, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useWizardStore } from '../../stores/wizard'
-import { Search, ChevronRight, CheckCircle2 } from 'lucide-vue-next'
+import { Search, ChevronRight, CheckCircle2, Loader2 } from 'lucide-vue-next'
 
 const store = useWizardStore()
+const isFetching = ref(false)
+
+const handlePassportNumber = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  const val = input.value.replace(/\D/g, '').slice(0, 7)
+  store.formData.accidentData.passportNumber = val
+  input.value = val
+}
+
+const handlePinfl = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  const val = input.value.replace(/\D/g, '').slice(0, 14)
+  store.formData.accidentData.pinfl = val
+  input.value = val
+}
+
+// Fake API orqali ma'lumotlarni olish
+const fetchPersonalData = async () => {
+  if (isFetching.value) return
+  isFetching.value = true
+  
+  // Simulyatsiya (delay) - 0.8 sec
+  await new Promise(resolve => setTimeout(resolve, 800))
+  
+  store.formData.accidentData.lastName = 'TAYLAKOV'
+  store.formData.accidentData.firstName = 'ULUG\'BEK'
+  store.formData.accidentData.middleName = 'NORBEKOVICH'
+  store.formData.accidentData.address = 'Toshkent sh., Mirobod t., Mirobod ko\'chasi, 9A-uy'
+  
+  isFetching.value = false
+}
+
+// JShShIR kiritilishi bilan avtomatik chaqirish
+watch(() => store.formData.accidentData.pinfl, (newVal) => {
+  if (newVal.replace(/\D/g, '').length === 14) {
+    fetchPersonalData()
+  }
+})
 
 // Sanani DD.MM.YYYY formatiga keltirish
 const formatDate = (date: Date) => {
@@ -74,27 +112,32 @@ onMounted(() => {
           <div class="md:col-span-4 relative group">
             <label class="block text-[13px] font-bold text-slate-600 mb-2 ml-1">Passport raqam</label>
             <input 
-              v-model="store.formData.accidentData.passportNumber"
+              :value="store.formData.accidentData.passportNumber"
+              @input="handlePassportNumber"
               type="text" 
+              inputmode="numeric"
               placeholder="1074617"
               class="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-4 text-slate-900 font-bold outline-none focus:border-emerald-500 focus:bg-white transition-all placeholder:text-slate-300"
             />
           </div>
 
-          <div class="md:col-span-4 relative group">
+          <div class="md:col-span-5 relative group">
             <label class="block text-[13px] font-bold text-slate-600 mb-2 ml-1">JShShIR</label>
-            <input 
-              v-model="store.formData.accidentData.pinfl"
-              type="text" 
-              placeholder="31002873680015"
-              class="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-4 text-slate-900 font-bold outline-none focus:border-emerald-500 focus:bg-white transition-all placeholder:text-slate-300"
-            />
-          </div>
-
-          <div class="md:col-span-1">
-            <button class="w-full h-[60px] bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20 transition-all active:scale-95">
-              <Search class="w-6 h-6" />
-            </button>
+            <div class="relative">
+              <input 
+                :value="store.formData.accidentData.pinfl"
+                @input="handlePinfl"
+                type="text" 
+                inputmode="numeric"
+                maxlength="14"
+                placeholder="31002873680015"
+                class="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-5 py-4 text-slate-900 font-bold outline-none focus:border-emerald-500 focus:bg-white transition-all placeholder:text-slate-300"
+              />
+              <div v-if="isFetching" class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                <div class="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></div>
+                <Loader2 class="w-5 h-5 text-emerald-500 animate-spin" />
+              </div>
+            </div>
           </div>
         </div>
 

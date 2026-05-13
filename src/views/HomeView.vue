@@ -44,6 +44,15 @@ const policies = [
     isPopular: true
   },
   {
+    id: 'hujjat',
+    title: 'Hujjatlarim himoyada — Pasport, ID-karta va "Prava" xavfsizligi',
+    description: 'Eng muhim shaxsiy hujjatlaringizning yo\'qolishi, o\'g\'irlanishi yoki shikastlanishi oqibatida ularni qayta tiklash bo\'yicha kutilmagan xarajatlarni qoplab beruvchi innovatsion sug\'urta polisi.',
+    icon: FileText,
+    color: 'from-violet-400 to-purple-600',
+    rate: '49 000 so\'mdan',
+    isPopular: false
+  },
+  {
     id: 'imushestvo',
     title: 'Mening Uyim — Mulkingiz xavfsizligi kaliti',
     description: 'Xonadoningiz, ofisingiz yoki binolaringizni yong\'in, suv toshqini, zilzila va uchinchi shaxslarning harakatlaridan kafolatli sug\'urta qiling.',
@@ -60,15 +69,6 @@ const policies = [
     color: 'from-emerald-400 to-green-600',
     rate: '900 000 so\'mdan',
     isPopular: true
-  },
-  {
-    id: 'hujjat',
-    title: 'Hujjatlarim himoyada — Pasport, ID-karta va "Prava" xavfsizligi',
-    description: 'Eng muhim shaxsiy hujjatlaringizning yo\'qolishi, o\'g\'irlanishi yoki shikastlanishi oqibatida ularni qayta tiklash bo\'yicha kutilmagan xarajatlarni qoplab beruvchi innovatsion sug\'urta polisi.',
-    icon: FileText,
-    color: 'from-violet-400 to-purple-600',
-    rate: '49 000 so\'mdan',
-    isPopular: false
   }
 ]
 

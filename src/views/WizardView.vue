@@ -9,6 +9,7 @@ import OsgovtsForm from '../components/forms/OsgovtsForm.vue'
 import TravelForm from '../components/forms/TravelForm.vue'
 import ImushestvoForm from '../components/forms/ImushestvoForm.vue'
 import AccidentForm from '../components/forms/AccidentForm.vue'
+import HujjatForm from '../components/forms/HujjatForm.vue'
 import BasePersonForm from '../components/forms/BasePersonForm.vue'
 
 const wizardStore = useWizardStore()
@@ -35,7 +36,10 @@ const updatePolicyFromRoute = () => {
 
 const handleOwnerNameInput = (e: Event) => {
   const input = e.target as HTMLInputElement
-  osagoStore.owner.person.fullName.firstname = input.value.toUpperCase()
+  const parts = input.value.toUpperCase().split(' ')
+  osagoStore.owner.person.fullName.lastname = parts[0] || ''
+  osagoStore.owner.person.fullName.firstname = parts[1] || ''
+  osagoStore.owner.person.fullName.middlename = parts.slice(2).join(' ') || ''
 }
 
 const handleOwnerSeriaInput = (e: Event) => {
@@ -130,7 +134,7 @@ const steps = computed(() => {
     }
   }
   
-  if (wizardStore.formData.policyType === 'baxtsiz') {
+  if (['baxtsiz', 'hujjat'].includes(wizardStore.formData.policyType as string)) {
     return [
       { id: 1, title: 'Pasport ma\'lumotlari' },
       { id: 2, title: 'Sug\'urta ma\'lumotlari' },
@@ -322,7 +326,7 @@ const currentFormComponent = computed(() => {
     vzr: TravelForm,
     imushestvo: ImushestvoForm,
     baxtsiz: AccidentForm,
-    hujjat: BasePersonForm
+    hujjat: HujjatForm
   }
   return map[wizardStore.formData.policyType as string] || BasePersonForm
 })
@@ -397,7 +401,7 @@ const getLimitAmount = computed(() => {
               <span class="text-red-500">*</span>
             </label>
             <input 
-              :value="osagoStore.owner.person.fullName.firstname"
+              :value="`${osagoStore.owner.person.fullName.lastname} ${osagoStore.owner.person.fullName.firstname} ${osagoStore.owner.person.fullName.middlename}`.trim()"
               @input="handleOwnerNameInput"
               type="text" 
               placeholder="TAYLAKOV ULUGBEK NORBEKOVICH" 
@@ -485,7 +489,7 @@ const getLimitAmount = computed(() => {
         </div>
 
         <!-- STEP 2 (Other): Policy Options -->
-        <div v-if="wizardStore.currentStep === 2 && !['osgovts', 'baxtsiz'].includes(wizardStore.formData.policyType)" class="flex-1 animate-in fade-in slide-in-from-right-4 duration-500">
+        <div v-if="wizardStore.currentStep === 2 && !['osgovts', 'baxtsiz', 'hujjat'].includes(wizardStore.formData.policyType)" class="flex-1 animate-in fade-in slide-in-from-right-4 duration-500">
           <h2 class="text-2xl font-bold mb-6 text-slate-900">Polis ta'rifini tanlang</h2>
           
           <div class="grid gap-4">
@@ -651,7 +655,7 @@ const getLimitAmount = computed(() => {
               <button class="text-red-500 text-sm font-medium hover:text-red-600 transition-colors">O'chirish</button>
             </div>
             <input 
-              v-model="osagoStore.owner.person.fullName.firstname"
+              :value="`${osagoStore.owner.person.fullName.lastname} ${osagoStore.owner.person.fullName.firstname} ${osagoStore.owner.person.fullName.middlename}`.trim()"
               type="text" 
               readonly
               class="w-full bg-slate-50 border-0 rounded-2xl px-5 py-3.5 text-slate-900 font-medium outline-none opacity-80"

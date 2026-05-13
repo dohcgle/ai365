@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useWizardStore } from '../../stores/wizard'
-import { User, Search, Star, ChevronDown, X, Building2, Landmark } from 'lucide-vue-next'
+import { User, Search, Star, ChevronDown, X, Building2, Landmark, Loader2 } from 'lucide-vue-next'
 
 const store = useWizardStore()
 
@@ -53,13 +53,24 @@ const handleClickOutside = (event: MouseEvent) => {
 onMounted(() => document.addEventListener('click', handleClickOutside))
 onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 
+// DD.MM.YYYY dan Date ob'ektiga o'tkazish
+const parseDateString = (str: string) => {
+  if (!str) return null
+  const parts = str.split('.')
+  if (parts.length === 3) {
+    return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]))
+  }
+  return null
+}
+
 // Sayohat kunlarini avtomatik hisoblash
 const travelDays = computed(() => {
-  if (store.formData.startDate && store.formData.travelEndDate) {
-    const start = new Date(store.formData.startDate)
-    const end = new Date(store.formData.travelEndDate)
+  const start = parseDateString(store.formData.startDate)
+  const end = parseDateString(store.formData.travelEndDate)
+  
+  if (start && end && !isNaN(start.getTime()) && !isNaN(end.getTime())) {
     const diffTime = end.getTime() - start.getTime()
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
     return diffDays > 0 ? diffDays : 0
   }
   return 0
@@ -100,6 +111,111 @@ const regions = [
   { id: 'namangan', name: 'Namangan vil.' },
   { id: 'samarqand', name: 'Samarqand vil.' }
 ]
+const isFetchingTraveler = ref(false)
+
+const handleTripDateInput = (field: 'startDate' | 'travelEndDate', e: Event) => {
+  const input = e.target as HTMLInputElement
+  let val = input.value.replace(/\D/g, '').slice(0, 8)
+  let formatted = ''
+  if (val.length > 0) {
+    formatted = val.slice(0, 2)
+    if (val.length > 2) formatted += '.' + val.slice(2, 4)
+    if (val.length > 4) formatted += '.' + val.slice(4, 8)
+  }
+  store.formData[field] = formatted
+  input.value = formatted
+}
+
+const fetchTravelerData = async () => {
+  if (isFetchingTraveler.value) return
+  isFetchingTraveler.value = true
+  
+  await new Promise(resolve => setTimeout(resolve, 1200))
+  
+  const person = store.formData.insuredPersons[0]
+  if (person) {
+    person.lastName = 'TAYLAKOV'
+    person.firstName = 'ULUG\'BEK'
+    person.middleName = 'NORBEKOVICH'
+    person.age = 37
+    person.pinfl = '31806045560012'
+    person.region = 'toshkent'
+    person.address = 'Toshkent sh., Mirobod t., Mirobod ko\'chasi, 9A-uy'
+  }
+  
+  isFetchingTraveler.value = false
+}
+
+// Birinchi haydovchi ma'lumotlari kiritilishi bilan
+watch([
+  () => store.formData.insuredPersons[0]?.passportSeries,
+  () => store.formData.insuredPersons[0]?.passportNumber,
+  () => store.formData.insuredPersons[0]?.dob
+], ([seria, num, dob]) => {
+  if (seria?.length === 2 && num?.length === 7 && dob?.length === 10) {
+    fetchTravelerData()
+  }
+})
+
+const handleApplicantPassportSeries = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  const val = input.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2)
+  store.formData.applicant.passportSeries = val
+  input.value = val
+}
+
+const handleApplicantPassportNumber = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  const val = input.value.replace(/\D/g, '').slice(0, 7)
+  store.formData.applicant.passportNumber = val
+  input.value = val
+}
+
+const handleApplicantDob = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  let val = input.value.replace(/\D/g, '').slice(0, 8)
+  let formatted = ''
+  if (val.length > 0) {
+    formatted = val.slice(0, 2)
+    if (val.length > 2) formatted += '.' + val.slice(2, 4)
+    if (val.length > 4) formatted += '.' + val.slice(4, 8)
+  }
+  store.formData.applicant.dob = formatted
+  input.value = formatted
+}
+
+const isFetchingApplicant = ref(false)
+
+const fetchApplicantData = async () => {
+  if (isFetchingApplicant.value) return
+  isFetchingApplicant.value = true
+  
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  
+  const applicant = store.formData.applicant
+  applicant.lastName = 'TAYLAKOV'
+  applicant.firstName = 'ULUG\'BEK'
+  applicant.middleName = 'NORBEKOVICH'
+  applicant.age = 37
+  applicant.pinfl = '31806045560012'
+  applicant.region = 'toshkent'
+  applicant.address = 'Toshkent sh., Mirobod t., Mirobod ko\'chasi, 9A-uy'
+  applicant.phone = '+998 90 971-01-11'
+  
+  isFetchingApplicant.value = false
+}
+
+// Ariza beruvchi ma'lumotlari kiritilishi bilan
+watch([
+  () => store.formData.applicant.passportSeries,
+  () => store.formData.applicant.passportNumber,
+  () => store.formData.applicant.dob
+], ([seria, num, dob]) => {
+  if (seria?.length === 2 && num?.length === 7 && dob?.length === 10) {
+    fetchApplicantData()
+  }
+})
+
 const countryInput = ref<HTMLInputElement | null>(null)
 </script>
 
@@ -180,8 +296,11 @@ const countryInput = ref<HTMLInputElement | null>(null)
               <label class="absolute left-4 top-2 text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Safar boshlanishi</label>
               <div class="flex items-center bg-slate-50 rounded-xl">
                 <input 
-                  v-model="store.formData.startDate"
-                  type="date" 
+                  :value="store.formData.startDate"
+                  @input="handleTripDateInput('startDate', $event)"
+                  type="text" 
+                  inputmode="numeric"
+                  placeholder="13.05.2026"
                   class="w-full bg-transparent border-0 px-4 pb-2 pt-6 text-slate-900 font-bold outline-none focus:ring-2 focus:ring-blue-500 rounded-xl"
                 />
               </div>
@@ -191,8 +310,11 @@ const countryInput = ref<HTMLInputElement | null>(null)
               <label class="absolute left-4 top-2 text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Safar tugashi</label>
               <div class="flex items-center bg-slate-50 rounded-xl">
                 <input 
-                  v-model="store.formData.travelEndDate"
-                  type="date" 
+                  :value="store.formData.travelEndDate"
+                  @input="handleTripDateInput('travelEndDate', $event)"
+                  type="text" 
+                  inputmode="numeric"
+                  placeholder="20.05.2026"
                   class="w-full bg-transparent border-0 px-4 pb-2 pt-6 text-slate-900 font-bold outline-none focus:ring-2 focus:ring-blue-500 rounded-xl"
                 />
               </div>
@@ -288,13 +410,38 @@ const countryInput = ref<HTMLInputElement | null>(null)
 
             <div class="md:col-span-5 relative group/number">
               <label class="absolute left-4 top-2 text-[10px] font-bold text-slate-400 uppercase">Raqam</label>
-              <input v-model="person.passportNumber" type="text" class="w-full bg-slate-50 border-0 rounded-xl px-4 pb-2 pt-6 pr-10 text-slate-900 font-bold outline-none" />
-              <Search class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input v-model="person.passportNumber" type="text" maxlength="7" class="w-full bg-slate-50 border-0 rounded-xl px-4 pb-2 pt-6 pr-10 text-slate-900 font-bold outline-none" />
+              <button 
+                v-if="index === 0"
+                @click="fetchTravelerData" 
+                class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors shadow-sm active:scale-95"
+              >
+                <Loader2 v-if="isFetchingTraveler" class="w-3.5 h-3.5 animate-spin" />
+                <Search v-else class="w-3.5 h-3.5" />
+              </button>
             </div>
 
             <div class="md:col-span-5 relative">
               <label class="absolute left-4 top-2 text-[10px] font-bold text-slate-400 uppercase">Tug'ilgan sana</label>
-              <input v-model="person.dob" type="date" class="w-full bg-slate-50 border-0 rounded-xl px-4 pb-2 pt-6 text-slate-900 font-bold outline-none" />
+              <input 
+                :value="person.dob" 
+                @input="(e) => {
+                  const input = e.target as HTMLInputElement
+                  let val = input.value.replace(/\D/g, '').slice(0, 8)
+                  let formatted = ''
+                  if (val.length > 0) {
+                    formatted = val.slice(0, 2)
+                    if (val.length > 2) formatted += '.' + val.slice(2, 4)
+                    if (val.length > 4) formatted += '.' + val.slice(4, 8)
+                  }
+                  person.dob = formatted
+                  input.value = formatted
+                }"
+                type="text" 
+                inputmode="numeric"
+                placeholder="10.02.1987"
+                class="w-full bg-slate-50 border-0 rounded-xl px-4 pb-2 pt-6 text-slate-900 font-bold outline-none" 
+              />
             </div>
           </div>
 
@@ -402,18 +549,44 @@ const countryInput = ref<HTMLInputElement | null>(null)
           <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
             <div class="md:col-span-2 relative">
               <label class="absolute left-4 top-2 text-[10px] font-bold text-slate-400 uppercase">Seriya</label>
-              <input v-model="store.formData.applicant.passportSeries" type="text" placeholder="FA" class="w-full bg-slate-50 border-0 rounded-xl px-4 pb-2 pt-6 text-slate-900 font-bold outline-none placeholder:text-slate-300 uppercase" />
+              <input 
+                :value="store.formData.applicant.passportSeries" 
+                @input="handleApplicantPassportSeries"
+                type="text" 
+                placeholder="FA" 
+                class="w-full bg-slate-50 border-0 rounded-xl px-4 pb-2 pt-6 text-slate-900 font-bold outline-none placeholder:text-slate-300 uppercase" 
+              />
             </div>
 
             <div class="md:col-span-5 relative group/number">
               <label class="absolute left-4 top-2 text-[10px] font-bold text-slate-400 uppercase">Raqam</label>
-              <input v-model="store.formData.applicant.passportNumber" type="text" class="w-full bg-slate-50 border-0 rounded-xl px-4 pb-2 pt-6 pr-10 text-slate-900 font-bold outline-none" />
-              <Search class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input 
+                :value="store.formData.applicant.passportNumber" 
+                @input="handleApplicantPassportNumber"
+                type="text" 
+                inputmode="numeric"
+                class="w-full bg-slate-50 border-0 rounded-xl px-4 pb-2 pt-6 pr-10 text-slate-900 font-bold outline-none" 
+              />
+              <button 
+                @click="fetchApplicantData"
+                class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors shadow-sm active:scale-95"
+                :disabled="isFetchingApplicant"
+              >
+                <Loader2 v-if="isFetchingApplicant" class="w-3.5 h-3.5 animate-spin" />
+                <Search v-else class="w-3.5 h-3.5" />
+              </button>
             </div>
 
             <div class="md:col-span-5 relative">
               <label class="absolute left-4 top-2 text-[10px] font-bold text-slate-400 uppercase">Tug'ilgan sana</label>
-              <input v-model="store.formData.applicant.dob" type="date" class="w-full bg-slate-50 border-0 rounded-xl px-4 pb-2 pt-6 text-slate-900 font-bold outline-none" />
+              <input 
+                :value="store.formData.applicant.dob" 
+                @input="handleApplicantDob"
+                type="text" 
+                inputmode="numeric"
+                placeholder="13.05.2026"
+                class="w-full bg-slate-50 border-0 rounded-xl px-4 pb-2 pt-6 text-slate-900 font-bold outline-none" 
+              />
             </div>
           </div>
 

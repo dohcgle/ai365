@@ -97,6 +97,21 @@ export const useWizardStore = defineStore('wizard', () => {
       coverage: 1000000,
       daysCount: 365,
       agreeToOffer: false
+    },
+    // Hujjat ma'lumotlari
+    hujjatData: {
+      passportSeries: '',
+      passportNumber: '',
+      pinfl: '',
+      lastName: '',
+      firstName: '',
+      middleName: '',
+      address: '',
+      startDate: '',
+      endDate: '',
+      coverage: 1000000,
+      daysCount: 365,
+      agreeToOffer: false
     }
   })
 
