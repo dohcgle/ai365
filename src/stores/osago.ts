@@ -92,11 +92,11 @@ export const useOsagoStore = defineStore('osago', () => {
     },
     modelCustomName: '',
     engineNumber: '',
-    typeId: '1',
+    typeId: 'yengil',
     issueYear: '',
     govNumber: '',
     bodyNumber: '',
-    regionId: 1,
+    regionId: 'toshkent',
     terrainId: 1
   })
 

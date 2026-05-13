@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useWizardStore } from '../../stores/wizard'
-import { User, Calendar, Search, Star, ChevronDown, X, Building2, Landmark } from 'lucide-vue-next'
+import { User, Search, Star, ChevronDown, X, Building2, Landmark } from 'lucide-vue-next'
 
 const store = useWizardStore()
 
@@ -100,6 +100,7 @@ const regions = [
   { id: 'namangan', name: 'Namangan vil.' },
   { id: 'samarqand', name: 'Samarqand vil.' }
 ]
+const countryInput = ref<HTMLInputElement | null>(null)
 </script>
 
 <template>
@@ -116,7 +117,7 @@ const regions = [
             <div class="md:col-span-8 relative group/field" ref="dropdownRef">
               <label class="absolute left-4 top-2 text-[10px] font-bold text-slate-400 uppercase tracking-tighter z-10">Mamlakat</label>
               
-              <div class="w-full bg-slate-50 border-0 rounded-xl px-4 pb-2 pt-6 flex flex-wrap gap-2 items-center min-h-[64px] focus-within:ring-2 focus-within:ring-blue-500 transition-all cursor-text" @click="$refs.countryInput.focus()">
+              <div class="w-full bg-slate-50 border-0 rounded-xl px-4 pb-2 pt-6 flex flex-wrap gap-2 items-center min-h-[64px] focus-within:ring-2 focus-within:ring-blue-500 transition-all cursor-text" @click="countryInput?.focus()">
                 <!-- TANLANGAN DAVLATLAR (CHIPS) -->
                 <div 
                   v-for="country in store.formData.travelCountries" 

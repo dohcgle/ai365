@@ -21,6 +21,8 @@ export const useWizardStore = defineStore('wizard', () => {
     region: 'toshkent',
     hasDiscount: false,
     drivers: [] as { passportSeries: string, passportNumber: string, dob: string }[],
+    // Imushestvo specific fields
+    cadastreNumber: '',
     // Travel specific fields
     travelEndDate: '',
     travelAge: 35,

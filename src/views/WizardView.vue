@@ -2,7 +2,7 @@
 import { computed, ref, watch, onMounted } from 'vue'
 import { useWizardStore } from '../stores/wizard'
 import { useOsagoStore } from '../stores/osago'
-import { CheckCircle2, ChevronRight, UserCircle, Car, CreditCard, ShieldAlert, Check, X, Copy } from 'lucide-vue-next'
+import { ChevronRight, ShieldAlert, Check, Copy } from 'lucide-vue-next'
 import { useRouter, useRoute } from 'vue-router'
 
 import OsgovtsForm from '../components/forms/OsgovtsForm.vue'

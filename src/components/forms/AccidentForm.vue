@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { watch, onMounted } from 'vue'
 import { useWizardStore } from '../../stores/wizard'
-import { Search, ChevronRight, ChevronLeft, CheckCircle2 } from 'lucide-vue-next'
+import { Search, ChevronRight, CheckCircle2 } from 'lucide-vue-next'
 
 const store = useWizardStore()
 
